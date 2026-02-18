@@ -166,7 +166,7 @@ module.exports = {
 
 ### License
 
-The Geist font family is free and open sourced under the [SIL Open Font License](./LICENSE.TXT).
+The Geist font family is free and open sourced under the [SIL Open Font License](../../LICENSE.txt).
 
 ### Inspiration
 
