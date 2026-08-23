@@ -1,7 +1,7 @@
 sources:
-  - GeistPixel.glyphspackage
-outputDir: ../fonts/GeistPixel
-familyName: "Geist Pixel"
+  - ZenPixel.glyphspackage
+outputDir: ../fonts/ZenPixel
+familyName: "Zen Pixel"
 cleanUp: true
 buildStatic: false
 stat:

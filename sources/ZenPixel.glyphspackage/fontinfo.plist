@@ -53,7 +53,7 @@ Location = 100;
 }
 );
 date = "2026-04-03 11:28:45 +0000";
-familyName = "Geist Pixel";
+familyName = "Zen Pixel";
 featurePrefixes = (
 {
 automatic = 1;
@@ -522,7 +522,7 @@ key = copyrights;
 values = (
 {
 language = dflt;
-value = "Copyright 2026 The Geist Project Authors (https://github.com/vercel/geist-font)";
+value = "Copyright 2026 Hanzo AI, Inc. (https://git.hanzo.ai/hanzoai/font)";
 }
 );
 },
@@ -531,13 +531,13 @@ key = designers;
 values = (
 {
 language = dflt;
-value = "Andrés Briganti";
+value = "Hanzo AI, Inc.";
 }
 );
 },
 {
 key = designerURL;
-value = "https://www.briganti.works/";
+value = "https://hanzo.ai";
 },
 {
 key = licenses;
@@ -553,17 +553,17 @@ key = manufacturers;
 values = (
 {
 language = dflt;
-value = "Vercel, Andrés Briganti, Guido Ferreyra";
+value = "Hanzo AI, Inc.";
 }
 );
 },
 {
 key = manufacturerURL;
-value = "https://www.briganti.works/";
+value = "https://hanzo.ai";
 },
 {
 key = vendorID;
-value = VRCL;
+value = "HNZO";
 }
 );
 settings = {

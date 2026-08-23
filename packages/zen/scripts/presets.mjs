@@ -34,9 +34,9 @@ export const PRESETS = {
     fits: 'Basel Grotesk Medium', residual: 0.254,
   },
   wide: {
-    wght: 845, scaleX: 1.56, track: -0.04,
-    note: 'Monumental caps. Fitted to Druk Wide Bold.',
-    fits: 'Druk Wide Bold', residual: 0.125,
+    wght: 845, scaleX: 1.40, track: -0.04,
+    note: 'Monumental caps. Fitted to the LUX wordmark.',
+    fits: 'the LUX wordmark', residual: 0.176,
   },
   round: {
     wght: 900, scaleX: 1, track: -0.018,

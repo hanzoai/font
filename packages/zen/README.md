@@ -1,8 +1,7 @@
-![](https://raw.githubusercontent.com/vercel/zen-font/main/packages/next/images/hero.png)
-
 # Zen Sans, Zen Mono & Zen Pixel
 
-Zen is a new font family created by [Vercel](https://vercel.com/design) in collaboration with [Basement Studio](https://basement.studio/).
+Zen is the Hanzo type family, under the SIL Open Font License. Every copyright the
+licence requires is in `LICENSE.txt`, which ships beside the binaries.
 
 Zen Sans is a sans-serif typeface designed for legibility and simplicity. It is modern, geometric, and based on the principles of classic Swiss typography. It is designed to be used in body copy, headlines, logos, posters, and other large display sizes.
 

@@ -1,4 +1,4 @@
-# Contributing to Geist Font
+# Contributing to Zen Font
 
 ## Development
 
@@ -18,7 +18,7 @@ This will:
 
 1. Build font files from source into `fonts/`
 2. Copy and rename fonts for the npm package into `packages/next/dist/fonts/`
-3. Create `geist-font.zip` with all of the fonts neatly packaged together
+3. Create `zen-font.zip` with all of the fonts neatly packaged together
 
 ## Release Process
 
@@ -53,7 +53,7 @@ This creates a markdown file in `packages/next/.changeset/` describing your chan
 1. **On every push**: The CI builds fonts and runs tests
 2. **On push to `main`**:
    - If there are changeset files, the CI creates a PR titled "changesets: update versions of packages for release"
-   - When that PR is merged, the CI publishes to npm (named [geist](https://www.npmjs.com/package/geist?activeTab=readme)) and creates a GitHub release
+   - When that PR is merged, the CI publishes to npm (named [zen](https://www.npmjs.com/package/zen?activeTab=readme)) and creates a GitHub release
    - An additional step attaches a zip file containing only the relevant font files to the GitHub release
 
 ### Manual Steps

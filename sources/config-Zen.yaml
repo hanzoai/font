@@ -7,10 +7,10 @@
 # sources/ directory, so all paths should be relative to that
 # directory.
 sources:
-  - Geist.glyphspackage
-  - Geist-Italic.glyphspackage
-outputDir: ../fonts/Geist
-familyName: "Geist"
+  - Zen.glyphspackage
+  - Zen-Italic.glyphspackage
+outputDir: ../fonts/Zen
+familyName: "Zen"
 cleanUp: true
 
 # Next you can supply alternative paths for where you want the
@@ -63,7 +63,7 @@ autohintOTF: true
 # if you specify a dictionary which does not contain an entry
 # for each VF file built.
 stat:
-  Geist[wght].ttf:
+  Zen[wght].ttf:
   - name: Weight
     tag: wght
     values:
@@ -94,7 +94,7 @@ stat:
       value: 0
       linkedValue: 1
       flags: 2
-  Geist-Italic[wght].ttf:
+  Zen-Italic[wght].ttf:
   - name: Weight
     tag: wght
     values:
