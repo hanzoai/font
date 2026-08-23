@@ -3,8 +3,10 @@
  * Two of the three brands already set their wordmark in live type — Hanzo's is
  * `<text font-family="Zen" font-weight="600">Hanzo</text>` beside the H mark, and
  * Zoo's is two spans (800 / 300) beside the Venn. Lux's is the odd one: 633 bytes
- * of drawn geometry that no font setting reaches, which is why LUX CREDIT set in
- * Zen sits next to it rather than with it.
+ * of drawn geometry, which is why LUX CREDIT set in Zen sits next to it rather
+ * than with it. Zen reaches it — `zen-wide` was refitted to that mark and lands
+ * within 2px of its width — and the U wants `_shape.py`'s flatten on top, since
+ * Zen's round forms overshoot the baseline by 16 units and the drawn mark is flat.
  *
  * This emits the wordmark AS Zen outlines, so a brand can adopt one file and have
  * every lockup beside it match by construction instead of by eye. It writes real
@@ -22,16 +24,23 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const OUT = join(HERE, 'dist', 'wordmark')
 const PY = join(HERE, '_outline.py')
 
+/* The Lux mark IS the wide preset — it does not restate it.
+   Copying 845/1.56/-0.04 here is how the two drifted: the preset was refitted
+   from a display face to the drawn LUX and this file kept cutting the old width, so a
+   brand adopting the file got a mark 83px wider than the CSS beside it. There
+   is one definition of the voice and it lives with the other four. */
+const { PRESETS } = await import('../packages/zen/dist/presets.js')
+const wide = PRESETS.wide
+
 /* Each entry is the setting the brand already uses, so these are not new
    decisions — they are the existing lockups made portable.
-     lux    the Zen Wide preset, the closest fit to the drawn mark (12.5% residual)
      hanzo  what brand/assets/logo/wordmark.svg already states
      zoo    lowercase — z, o and o are all x-height and the two o are the same
             circle, so the mark is symmetrical by construction rather than by
             optical adjustment. Caps would need the Z kerned against two round
             forms; lowercase needs nothing. */
 const MARKS = [
-  { name: 'lux',   text: 'LUX',   wght: 845, scaleX: 1.56, track: -0.040 },
+  { name: 'lux',   text: 'LUX',   wght: wide.wght, scaleX: wide.scaleX, track: wide.track },
   { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.00, track: -0.0286 },
   { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.00, track: -0.025 },
 ]
