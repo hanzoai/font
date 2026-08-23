@@ -2331,7 +2331,7 @@ key = copyrights;
 values = (
 {
 language = dflt;
-value = "Copyright 2024 The Zen Project Authors (https://github.com/hanzo/zen-font.git)";
+value = "Copyright 2026 Hanzo AI, Inc. (https://git.hanzo.ai/hanzoai/font)";
 }
 );
 },
@@ -2346,7 +2346,7 @@ value = "Hanzo AI, Inc.";
 },
 {
 key = designerURL;
-value = "https://hanzo.ai/";
+value = "https://hanzo.ai";
 },
 {
 key = licenses;
@@ -2366,17 +2366,17 @@ key = manufacturers;
 values = (
 {
 language = dflt;
-value = "Hanzo AI, Inc., Hanzo AI, Inc., Hanzo AI, Inc., Guido Ferreyra, Hanzo AI, Inc.";
+value = "Hanzo AI, Inc.";
 }
 );
 },
 {
 key = manufacturerURL;
-value = "https://hanzo.ai/";
+value = "https://hanzo.ai";
 },
 {
 key = vendorID;
-value = VRCL;
+value = "HNZO";
 }
 );
 stems = (

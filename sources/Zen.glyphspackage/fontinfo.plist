@@ -19,7 +19,7 @@ A Aacute Abreve Acaron Acircumflex Adieresis Agrave Amacron Aogonek Aring Atilde
 # Numbers
 zero one two three four five six seven eight nine zero.blackCircled one.blackCircled two.blackCircled three.blackCircled four.blackCircled five.blackCircled six.blackCircled seven.blackCircled eight.blackCircled nine.blackCircled zero.circled one.circled two.circled three.circled four.circled five.circled six.circled seven.circled eight.circled nine.circled zero.ss09 one.ss09 zero.tf one.tf two.tf three.tf four.tf five.tf six.tf seven.tf eight.tf nine.tf zero.dnom one.dnom two.dnom three.dnom four.dnom five.dnom six.dnom seven.dnom eight.dnom nine.dnom zero.numr one.numr two.numr three.numr four.numr five.numr six.numr seven.numr eight.numr nine.numr fraction onehalf onethird twothirds onequarter threequarters onefifth oneeighth threeeighths fiveeighths seveneighths zeroinferior oneinferior twoinferior threeinferior fourinferior fiveinferior sixinferior seveninferior eightinferior nineinferior zerosuperior onesuperior twosuperior threesuperior foursuperior fivesuperior sixsuperior sevensuperior eightsuperior ninesuperior 
 # Symbols
-hyphen_hyphen_hyphen_greater.liga hyphen_hyphen_greater.liga hyphen_greater.liga florin baht less_hyphen.liga less_hyphen_hyphen.liga less_hyphen_hyphen_hyphen.liga less_hyphen_greater.liga whiteFrowningFace whiteSmilingFace apple at ampersand paragraph section copyright registered published trademark degree minute second bar brokenbar dagger daggerdbl numero cent currency dollar euro hryvnia peso ruble rupeeIndian sheqel sterling yen plus minus multiply divide equal notequal greater less greaterequal lessequal plusminus approxequal asciitilde logicalnot asciicircum infinity integral increment product summation radical partialdiff percent perthousand ratio greater.alt less.alt upArrow northEastArrow rightArrow southEastArrow downArrow southWestArrow leftArrow northWestArrow leftRightArrow upDownArrow rightWaveArrow leftTabArrow rightTabArrow leftHookArrow rightHookArrow upTipLeftArrow upTipRightArrow downTipRightArrow rightCornerDownArrow carriagereturn upWhiteArrow upArrow.ss07 northEastArrow.ss07 rightArrow.ss07 southEastArrow.ss07 downArrow.ss07 southWestArrow.ss07 leftArrow.ss07 northWestArrow.ss07 leftRightArrow.ss07 upDownArrow.ss07 blackCircle whiteCircle dottedCircle lozenge upBlackTriangle rightBlackTriangle downBlackTriangle leftBlackTriangle upWhiteTriangle rightWhiteTriangle downWhiteTriangle leftWhiteTriangle
+hyphen_hyphen_hyphen_greater.liga hyphen_hyphen_greater.liga hyphen_greater.liga florin baht less_hyphen.liga less_hyphen_hyphen.liga less_hyphen_hyphen_hyphen.liga less_hyphen_greater.liga whiteFrowningFace whiteSmilingFace  at ampersand paragraph section copyright registered published trademark degree minute second bar brokenbar dagger daggerdbl numero cent currency dollar euro hryvnia peso ruble rupeeIndian sheqel sterling yen plus minus multiply divide equal notequal greater less greaterequal lessequal plusminus approxequal asciitilde logicalnot asciicircum infinity integral increment product summation radical partialdiff percent perthousand ratio greater.alt less.alt upArrow northEastArrow rightArrow southEastArrow downArrow southWestArrow leftArrow northWestArrow leftRightArrow upDownArrow rightWaveArrow leftTabArrow rightTabArrow leftHookArrow rightHookArrow upTipLeftArrow upTipRightArrow downTipRightArrow rightCornerDownArrow carriagereturn upWhiteArrow upArrow.ss07 northEastArrow.ss07 rightArrow.ss07 southEastArrow.ss07 downArrow.ss07 southWestArrow.ss07 leftArrow.ss07 northWestArrow.ss07 leftRightArrow.ss07 upDownArrow.ss07 blackCircle whiteCircle dottedCircle lozenge upBlackTriangle rightBlackTriangle downBlackTriangle leftBlackTriangle upWhiteTriangle rightWhiteTriangle downWhiteTriangle leftWhiteTriangle
 # Misc
 brevecomb-cy dieresiscomb dotaccentcomb gravecomb acutecomb hungarumlautcomb caroncomb.alt circumflexcomb caroncomb brevecomb ringcomb tildecomb macroncomb commaturnedabovecomb commaaccentcomb commaaccentcomb.loclMAH cedillacomb ogonekcomb strokeshortcomb strokelongcomb slashshortcomb slashlongcomb strokeshortcomb.case slashshortcomb.case slashlongcomb.case dieresiscomb.ss08 dotaccentcomb.ss08 dieresis dotaccent grave acute hungarumlaut circumflex caron breve ring tilde macron cedilla ogonek dieresis.ss08 dotaccent.ss08 apostrophemod primemod verticallinemod blackCircled blackCircledStroke 
 ";
@@ -3884,7 +3884,7 @@ key = copyrights;
 values = (
 {
 language = dflt;
-value = "Copyright 2024 The Zen Project Authors (https://github.com/hanzo/zen-font)";
+value = "Copyright 2026 Hanzo AI, Inc. (https://git.hanzo.ai/hanzoai/font)";
 }
 );
 },
@@ -3899,7 +3899,7 @@ value = "Hanzo AI, Inc.";
 },
 {
 key = designerURL;
-value = "https://hanzo.ai/";
+value = "https://hanzo.ai";
 },
 {
 key = licenses;
@@ -3919,17 +3919,17 @@ key = manufacturers;
 values = (
 {
 language = dflt;
-value = "Hanzo AI, Inc., Hanzo AI, Inc., Hanzo AI, Inc., Guido Ferreyra, Hanzo AI, Inc.";
+value = "Hanzo AI, Inc.";
 }
 );
 },
 {
 key = manufacturerURL;
-value = "https://hanzo.ai/";
+value = "https://hanzo.ai";
 },
 {
 key = vendorID;
-value = VRCL;
+value = "HNZO";
 }
 );
 stems = (
