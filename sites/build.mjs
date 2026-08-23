@@ -68,6 +68,12 @@ const BRANDS = {
     display: 'round', body: 'book', pixel: 'Grid',
     headline: 'Science for everyone!',
     uses: ['round', 'book', 'medium'],
+    /* Zoo's wordmark is TYPE, not artwork — `components/Logo.tsx` renders the
+       Venn mark beside two live spans, `ZOO` at extrabold and the property name
+       at light. So unlike Lux, whose mark is fixed SVG geometry that no font
+       change can touch, moving Zoo to Zen MOVES ITS WORDMARK. That is worth
+       showing rather than discovering. */
+    wordmark: { lead: 'ZOO', tail: 'INDUSTRIES', lead_w: 800, tail_w: 300, track: -0.025 },
   },
 }
 
@@ -108,6 +114,25 @@ function page(key, b) {
        <strong>12.5%</strong> on the word LUX, which is a strong resemblance rather
        than a match. The wordmark itself stays artwork; it is three glyphs and already
        right.</p>` : ''
+
+  const wm = b.wordmark
+  const wmSection = !wm ? '' : `
+<section>
+  <div class="head"><span class="eyebrow">05 · The wordmark</span>
+    <h2>Set, not drawn</h2></div>
+  <p>${b.name}'s wordmark is <strong>live type</strong> — the mark beside two spans,
+  the name at ${wm.lead_w} and the property at ${wm.tail_w}. It is not artwork, so it is not
+  frozen: changing the family changes the wordmark, which is why it belongs on this
+  page rather than in a folder of SVGs.</p>
+  <div class="stack" style="padding:34px 24px">
+    <div class="lockup"><span class="lead">${wm.lead}</span><span class="tail">&nbsp;${wm.tail}</span></div>
+    <div class="lockup" style="font-size:26px;margin-top:22px"
+      ><span class="lead">${wm.lead}</span><span class="tail">&nbsp;LABS</span></div>
+  </div>
+  <p class="note">Two weights off one axis — no second file, and every property that
+  reuses the lockup inherits the same pair. The tracking is ${wm.track}em, tight enough
+  that the name reads as one object rather than two words.</p>
+</section>`
 
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -173,6 +198,10 @@ td.l{color:var(--dim);font-size:13.5px}
 .glyphs{background:var(--sunk);border:1px solid var(--line);border-radius:3px;
   padding:24px;font-size:23px;line-height:1.85;color:var(--dim);word-break:break-word}
 .pxline{font-family:'Zen Pixel';font-size:31px;color:var(--ac);margin-top:14px}
+.lockup{font-size:clamp(30px,5vw,54px);line-height:1;text-transform:uppercase;
+  letter-spacing:${wm ? wm.track : 0}em;white-space:nowrap}
+.lockup .lead{font-variation-settings:'wght' ${wm ? wm.lead_w : 800}}
+.lockup .tail{font-variation-settings:'wght' ${wm ? wm.tail_w : 300}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -232,6 +261,7 @@ td.l{color:var(--dim);font-size:13.5px}
   the token layer and needs no font import at all — which is what keeps every ${b.name}
   property on one version of the type as the family evolves.</p>
 </section>
+${wmSection}
 </div>
 `
 }
