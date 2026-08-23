@@ -16,7 +16,12 @@ jobs:
     runs-on: hanzo-build-linux-amd64
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      # No pnpm and no `install`. This repo has ONE package and no root
+      # manifest, workspace or lockfile — `pnpm install` exits non-zero with
+      # nothing to install and takes the job with it, which is why 1.8.3 sat
+      # unpublished while the identical shape worked in hanzoai/ui. The package
+      # has no build step either: dist/ is committed, and the only generated
+      # file is checked below.
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -74,8 +79,7 @@ jobs:
           WANT: ${{ steps.v.outputs.want }}
         run: |
           set -uo pipefail
-          pnpm install
-          # The presets are GENERATED. Publishing without this ships a
+          # The presets are GENERATED. Publishing without regenerating ships a
           # dist/presets.css that disagrees with scripts/presets.mjs, and the
           # disagreement is invisible — both files are valid CSS.
           node packages/zen/scripts/presets.mjs
@@ -94,7 +98,7 @@ jobs:
             [ -s "packages/zen/$f" ] || { echo "::error::missing $f"; exit 1; }
           done
 
-          OUT=$(pnpm --filter @hanzo/font publish --no-git-checks --access public 2>&1)
+          OUT=$(cd packages/zen && npm publish --access public 2>&1)
           PUB=$?; echo "$OUT"
           case "$OUT" in
             *EPUBLISHCONFLICT*|*"cannot publish over"*)
