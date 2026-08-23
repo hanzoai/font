@@ -109,11 +109,16 @@ function page(key, b) {
 
   const wideNote = b.display === 'wide'
     ? `<p class="note"><strong>Zen Wide transforms</strong>, so its layout box stays the
-       untransformed width — give it room or clip its container. It was fitted to a
-       licensed display face by pixel residual and lands at
-       <strong>12.5%</strong> on the word LUX, which is a strong resemblance rather
-       than a match. The wordmark itself stays artwork; it is three glyphs and already
-       right.</p>` : ''
+       untransformed width — give it room or clip its container. It is fitted to
+       <strong>the LUX wordmark</strong> by pixel residual: ${(PRESETS.wide.residual * 100).toFixed(1)}%
+       against the drawn mark, and 739px wide where the mark is 741. It was fitted to a
+       licensed display face first, which is a different target and read as an 83px
+       overhang beside the very mark it was meant to sit with.</p>
+      <p class="note">The wordmark is <strong>set, not drawn</strong>. Cutting it from
+       Zen wants one thing the preset cannot do, because it is an outline operation
+       rather than a setting: Zen's round forms drop 16 units below the baseline, which
+       is right for type and wrong here — the drawn U is flat. Flattening it takes the
+       residual to 16.8%.</p>` : ''
 
   const wm = b.wordmark
   const wmSection = !wm ? '' : `
