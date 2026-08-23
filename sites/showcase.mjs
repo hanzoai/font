@@ -180,6 +180,14 @@ tbody tr:last-child td{border-bottom:0}
   master drawn for Zen, with the horizontals held near-monoline at display weight.
   That is outline work, not a setting, and it would let the family reach the drawn
   mark rather than resemble it.</p>
+  <p class="note"><strong>And the cheap version of that does not exist — tested,
+  not assumed.</strong> A variable axis has a declared maximum, so the obvious move
+  is to raise it and ask for a weight past the end. Extending <code>fvar</code>'s
+  <code>wght</code> maximum to 1200 and instantiating at 1000, 1100 and 1200 returns
+  ratios <em>identical</em> to 900 — 0.276 / 0.221 / 0.801 at every one. The deltas
+  describe the shape only as far as the heaviest master; past it the instancer pins
+  rather than extrapolates. There is no weight beyond 900 to be had from this file,
+  which is what makes the remaining option drawing rather than tooling.</p>
 </section>
 </div>
 `
