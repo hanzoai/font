@@ -26,8 +26,8 @@ ehthumbs.db
 Thumbs.db
 
 # Font build artifacts #
-geist-font/
-geist-font*.zip
+zen-font/
+zen-font*.zip
 packages/next/dist/fonts/
 artifacts/
 
@@ -50,3 +50,4 @@ packages/next/LICENSE.txt
 *(Otomatik Kaydedildi).*
 *（自动存储）.*
 *（已自動儲存）.*
+sites/dist/

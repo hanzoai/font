@@ -1,0 +1,90 @@
+name: deploy
+
+# The three brand font sites — font.hanzo.ai, font.lux.network, font.zoo.ngo.
+#
+# ONE generator, three outputs. sites/build.mjs reads the presets from
+# packages/zen/dist/presets.js and emits the same page three times with a
+# different pack, because that IS the claim these sites make: the difference
+# between the brands is a handful of numbers over one file, not three families.
+# Three hand-authored sites would quietly contradict the thing they demonstrate.
+#
+# They are SITES, not Apps. Static HTML with the faces inlined as data URIs —
+# nothing executes, so baking an image and running pods to hand back one file per
+# brand would be three deployments of a web server that serves a specimen. The
+# Sites plane is exactly this shape.
+#
+# Publish mechanics are NOT here. They are bin/site in hanzoai/ci, reached through
+# its action, which every static surface in the fleet calls — ensure-project,
+# enqueue, presigned per-file upload, complete. It SELF-PROVISIONS, so merging
+# this file is enough to stand all three up.
+#
+# ONE credential, and it is the KMS client identity rather than a deploy token.
+# The action reads the key from KMS, so resealing rotates every site at once and
+# no token is named in any workflow. A forge org secret holding a key that has
+# stopped resolving is a secret nobody can tell is dead — hips.hanzo.ai failed 403
+# for weeks that way while hanzo.ai, already on KMS, published fine.
+#
+# HOSTS: font.hanzo.ai resolves today (wildcard) and 404s because no site is
+# published at that slug — this fixes that one. font.lux.network and font.zoo.ngo
+# do NOT resolve at all (measured: DNS returns nothing), so publishing puts the
+# bytes in place and each still needs a route declared in hanzoai/universe plus a
+# DNS record before it answers. The publish is not the go-live for those two.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sites/**'
+      - 'packages/zen/dist/presets.js'
+      - 'packages/zen/dist/fonts/**'
+      - '.hanzo/workflows/deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sites:
+    # NOT ubuntu-latest — these run on the in-cluster act_runner fleet, which
+    # advertises hanzo-build-linux-amd64. A job targeting a label no runner
+    # answers queues forever and publishes nothing, which reads as a broken
+    # deploy rather than a misrouted one.
+    runs-on: hanzo-build-linux-amd64
+    timeout-minutes: 20
+    strategy:
+      # Independent surfaces: one brand failing must not withhold the other two.
+      fail-fast: false
+      matrix:
+        include:
+          - brand: hanzo
+            slug: font-hanzo-ai
+          - brand: lux
+            slug: font-lux-network
+          - brand: zoo
+            slug: font-zoo-ngo
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: build ${{ matrix.brand }}
+        run: |
+          set -euo pipefail
+          node sites/build.mjs
+          d="sites/dist/${{ matrix.brand }}"
+          test -s "$d/index.html" || { echo "::error::$d/index.html is missing or empty"; exit 1; }
+          # The faces are inlined, so a page that lost them is a page that
+          # renders in the platform sans — small enough to catch by size, and
+          # the failure is otherwise silent.
+          bytes=$(wc -c < "$d/index.html")
+          test "$bytes" -gt 150000 || { echo "::error::$d/index.html is ${bytes}B — the fonts did not inline"; exit 1; }
+          grep -q "font-display:block" "$d/index.html" || { echo "::error::$d/index.html uses swap, not block"; exit 1; }
+          echo "${{ matrix.brand }}: ${bytes} bytes"
+
+      - name: publish ${{ matrix.slug }}
+        uses: https://git.hanzo.ai/hanzoai/ci/.github/actions/site@v1
+        with:
+          slug: ${{ matrix.slug }}
+          dir: sites/dist/${{ matrix.brand }}
+        env:
+          KMS_CLIENT_ID: ${{ secrets.KMS_CLIENT_ID }}
+          KMS_CLIENT_SECRET: ${{ secrets.KMS_CLIENT_SECRET }}
