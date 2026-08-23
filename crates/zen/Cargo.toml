@@ -1,0 +1,45 @@
+[package]
+name = "zen"
+version = "0.1.0"
+edition = "2021"
+description = "Zen type tooling: optical kerning, parameter fitting and identity, from the outlines."
+license = "MIT OR Apache-2.0"
+repository = "https://git.hanzo.ai/hanzoai/font"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# skrifa reads outlines and applies a variation instance; write-fonts serialises a
+# modified table back. Both are pure Rust with no C, which is what makes the same
+# source compile to a native binary and to wasm32 with nothing swapped out.
+#
+# Nothing else is pulled in. Flattening and rasterising are ~150 lines here rather
+# than a rasteriser dependency, because the scanline machinery the kerner already
+# needs IS a rasteriser — taking tiny-skia for the fitter would mean two ways to
+# ask the same question, and several hundred KB of wasm for the privilege.
+[dependencies]
+skrifa = { version = "0.22", default-features = false, features = ["std"] }
+write-fonts = { version = "0.28", default-features = false, optional = true }
+wasm-bindgen = { version = "0.2", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
+
+[features]
+default = ["cli"]
+# The identity rewrite needs a serialiser; the measurements do not, so a wasm
+# build that only fits and kerns does not carry one.
+name = ["dep:write-fonts"]
+cli = []
+wasm = ["dep:wasm-bindgen", "dep:serde", "dep:serde_json"]
+
+[[bin]]
+name = "zen"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
