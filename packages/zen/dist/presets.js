@@ -37,7 +37,7 @@ export const PRESETS = {
     "note": "Heavy and friendly at large sizes. Zoo’s display voice."
   }
 }
-export const BASEL_XHEIGHT_FACTOR = 0.962
+export const BASEL_XHEIGHT_FACTOR = 0.9321
 
 /** Style object for a preset — for a surface that styles in code, not CSS. */
 export function preset(name) {

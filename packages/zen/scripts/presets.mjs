@@ -44,12 +44,27 @@ export const PRESETS = {
   },
 }
 
-/* Basel’s x-height is 0.718 of its cap and Zen’s is 0.746, so at one font-size
-   Zen’s lowercase reads ~4% larger. A surface REPLACING Basel multiplies its
-   font-size by this; a surface simply using Zen does not. It is deliberately not
-   baked into `book`/`medium` — the preset is a voice, this is a migration
-   correction, and braiding them would apply it to type that never saw Basel. */
-export const BASEL_XHEIGHT_FACTOR = 0.962
+/* A surface REPLACING Basel multiplies its font-size by this; a surface simply
+   using Zen does not. It is deliberately not baked into `book`/`medium` — the
+   preset is a voice, this is a migration correction, and braiding them would
+   apply it to type that never saw Basel.
+
+   DIVIDE BY THE EM, NOT THE CAP, and that is the whole subtlety. `font-size` and
+   `size-adjust` both scale the em, so matching x-heights means matching
+   x-per-em:
+
+     Basel  xh 494 / upem 1000 = 0.4940
+     Zen    xh 530 / upem 1000 = 0.5300
+     factor = 0.4940 / 0.5300  = 0.9321
+
+   This shipped as 0.962 first, derived from the same two faces' x-per-CAP
+   (0.7180 / 0.7465). Those cap ratios are correct and the arithmetic on them is
+   correct — it just answers a question nobody asked, because no CSS property
+   scales a glyph by its cap height. The result was type still 3.2% larger than
+   the Basel it replaced: better than the 6.8% of no correction at all, and close
+   enough to read as done while being wrong. Any surface that applied 0.962
+   should move to this value. */
+export const BASEL_XHEIGHT_FACTOR = 0.9321
 
 const decl = (p) => {
   const out = [`font-variation-settings:'wght' ${p.wght}`]
