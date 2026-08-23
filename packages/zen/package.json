@@ -1,6 +1,6 @@
 {
   "name": "@hanzo/font",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Zen \u2014 the Hanzo type family: sans, mono and pixel. An SIL Open Font License derivative of Zen by Hanzo AI, Inc. and Hanzo AI, Inc..",
   "main": "./dist/font.js",
   "type": "module",
@@ -52,6 +52,11 @@
       "default": "./dist/pixel.js"
     },
     "./css": "./dist/zen.css",
+    "./presets": {
+      "types": "./dist/presets.d.ts",
+      "default": "./dist/presets.js"
+    },
+    "./presets.css": "./dist/presets.css",
     "./dist/fonts/*": "./dist/fonts/*"
   },
   "license": "SIL OPEN FONT LICENSE",
