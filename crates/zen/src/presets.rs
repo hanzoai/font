@@ -2,9 +2,9 @@
 use crate::Preset;
 
 pub const PRESETS: [Preset; 5] = [
-    Preset { name: "air", wght: 220.0, scale_x: 1.00, track: -0.030, residual: None, within: None },
-    Preset { name: "book", wght: 497.0, scale_x: 1.00, track: 0.000, residual: Some(0.297), within: None },
-    Preset { name: "medium", wght: 606.0, scale_x: 1.00, track: 0.000, residual: Some(0.254), within: None },
-    Preset { name: "wide", wght: 650.0, scale_x: 1.56, track: -0.095, residual: None, within: Some(0.038) },
-    Preset { name: "round", wght: 900.0, scale_x: 1.00, track: -0.018, residual: None, within: None },
+    Preset { name: "air", wght: 220.0, scale_x: 1.0, track: -0.03, residual: None, within: None },
+    Preset { name: "book", wght: 497.0, scale_x: 1.0, track: 0.0, residual: Some(0.297), within: None },
+    Preset { name: "medium", wght: 606.0, scale_x: 1.0, track: 0.0, residual: Some(0.254), within: None },
+    Preset { name: "wide", wght: 650.0, scale_x: 1.4861, track: -0.095, residual: None, within: Some(0.026) },
+    Preset { name: "round", wght: 900.0, scale_x: 1.0, track: -0.018, residual: None, within: None },
 ];
