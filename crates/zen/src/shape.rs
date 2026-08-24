@@ -59,18 +59,40 @@ pub fn inside(g: &Glyph, x: f32, y: f32) -> bool {
     w != 0
 }
 
-/// Clamp every point into the baseline/cap band.
+/// Bring a glyph's ink inside the baseline/cap band by SCALING, not clamping.
 ///
 /// Zen's `U` drops 16 units below the baseline. That is correct type design — a
 /// round form must overshoot or it reads short beside a flat one — and it is
-/// exactly wrong here, because the drawn U is geometric with its bottom dead flat
-/// on the L's line. Clamping turns the overshoot into that flat.
+/// wrong here, because the drawn U sits on the same line as the L.
+///
+/// Clamping was the first answer and it is the one that looks wrong: every point
+/// below the baseline collapses onto it, so the bowl gains a literal flat segment
+/// across its bottom. Measured, that U was 3.8% THINNER than the drawn one and it
+/// still read fatter, because a flat reads as more mass than the curve it
+/// replaced. Scaling the glyph so its lowest point lands on the baseline keeps
+/// the curve a curve. On the U it is a 710/726 squash — under 3%, invisible as a
+/// height change and the whole difference in how the bottom reads.
 pub fn flatten(g: &Glyph, lo: f32, hi: f32) -> Glyph {
+    let (mut ymin, mut ymax) = (f32::MAX, f32::MIN);
+    for c in &g.contours {
+        for p in c {
+            ymin = ymin.min(p.1);
+            ymax = ymax.max(p.1);
+        }
+    }
+    if ymin >= lo && ymax <= hi {
+        return Glyph { contours: g.contours.clone(), advance: g.advance };
+    }
+    let span = ymax - ymin;
+    if span <= 0.0 {
+        return Glyph { contours: g.contours.clone(), advance: g.advance };
+    }
+    let k = (hi - lo) / span;
     Glyph {
         contours: g
             .contours
             .iter()
-            .map(|c| c.iter().map(|&(x, y)| (x, y.clamp(lo, hi))).collect())
+            .map(|c| c.iter().map(|&(x, y)| (x, lo + (y - ymin) * k)).collect())
             .collect(),
         advance: g.advance,
     }

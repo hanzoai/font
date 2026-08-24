@@ -58,15 +58,21 @@ if (!existsSync(ZEN)) {
  *          optical adjustment. Caps would need the Z kerned against two round
  *          forms; lowercase needs nothing.
  */
-const MARKS = [
-  { name: 'lux',   text: 'LUX',   wght: 625, scaleX: 1.576, track: -0.095, flatten: 1, thicken: 78, diag: 750, ux: -0.04 },
-  { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.000, track: -0.0286, flatten: 0, thicken: 0, diag: 0, ux: 0 },
-  { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.000, track: -0.025, flatten: 0, thicken: 0, diag: 0, ux: 0 },
+const LUX = { wght: 650, scaleX: 1.556, track: -0.095, flatten: 1, diag: 750, ux: -0.02 }
 
-  // The Lux family lockups. Same voice as the mark, no thicken — see above.
-  ...['LUX CREDIT', 'LUX FINANCE', 'LUX BANK', 'LUX FUND', 'LUX EXCHANGE'].map((text) => ({
-    name: text.toLowerCase().replace(/ /g, '-'), text,
-    wght: 625, scaleX: 1.576, track: -0.095, flatten: 1, thicken: 0, diag: 750, ux: -0.04,
+const MARKS = [
+  { name: 'lux', text: 'LUX', ...LUX, thicken: 90 },
+  { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.000, track: -0.0286, flatten: 0, thicken: 0, diag: 0, ux: 0 },
+  { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.000, track: -0.025,  flatten: 0, thicken: 0, diag: 0, ux: 0 },
+
+  // The Lux family. Same voice as the mark and the same U-X tuck, thicken 0 —
+  // see above. Every surface that puts a word after LUX takes its lockup from
+  // here rather than setting it locally, which is the only way LUX means the
+  // same thing on twelve properties.
+  ...['LUX CREDIT', 'LUX FINANCE', 'LUX BANK', 'LUX FUND', 'LUX EXCHANGE',
+      'LUX LINK', 'LUX DAO', 'LUX MARKET', 'LUX TRADER', 'LUX PRO',
+      'LUX AI', 'LUX CHAT', 'LX'].map((text) => ({
+    name: text.toLowerCase().replace(/ /g, '-'), text, ...LUX, thicken: 0,
   })),
 ]
 
