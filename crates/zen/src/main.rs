@@ -127,7 +127,10 @@ fn main() {
             // arg 8 is the weight diagonals are cut at; 0 means "same as the rest"
             let dw = n(8);
             let dface = (dw > 0.0).then(|| Face::new(&bytes, dw).unwrap_or_else(|e| die(&e)));
-            let m = zen::shape::mark(&face, &a[2], n(5), a[6] == "1", n(7), dface.as_ref())
+            // arg 10: a UX kern in em, negative to tuck the X under the U
+            let ux: f32 = a.get(10).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let m = zen::shape::mark_kerned(&face, &a[2], n(5), a[6] == "1", n(7),
+                                            dface.as_ref(), &[('U', 'X', ux)])
                 .unwrap_or_else(|e| die(&e));
             // simplify tolerance, in font units. Optional so a suspected
             // simplify artefact can be ruled in or out without a rebuild.
@@ -144,13 +147,15 @@ fn main() {
             }
             let bytes = read(&a[1]);
             let n = |i: usize| -> f32 { a[i].parse().unwrap_or_else(|_| die(&format!("bad number: {}", a[i]))) };
-            let art = String::from_utf8_lossy(&read(a.get(7).map(String::as_str)
+            let art = String::from_utf8_lossy(&read(a.get(8).map(String::as_str)
                 .unwrap_or("/home/z/work/lux/logo/svg/lux-wordmark-white.svg"))).to_string();
             let face = Face::new(&bytes, n(2)).unwrap_or_else(|e| die(&e));
             let want = zen::lux::drawn(&art, face.cap).unwrap_or_else(|| die("cannot read the drawn mark"));
             let dw = n(6);
             let dface = (dw > 0.0).then(|| Face::new(&bytes, dw).unwrap_or_else(|e| die(&e)));
-            let m = zen::shape::mark(&face, "LUX", n(4), true, n(5), dface.as_ref())
+            let ux: f32 = a.get(7).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let m = zen::shape::mark_kerned(&face, "LUX", n(4), true, n(5),
+                                            dface.as_ref(), &[('U', 'X', ux)])
                 .unwrap_or_else(|e| die(&e));
             let got = zen::lux::features(&m, n(3));
             out(&format!("{:<10}{:>9}{:>9}{:>9}\n", "feature", "drawn", "zen", "off"));
