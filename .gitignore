@@ -51,3 +51,4 @@ packages/next/LICENSE.txt
 *（自动存储）.*
 *（已自動儲存）.*
 sites/dist/
+__pycache__/

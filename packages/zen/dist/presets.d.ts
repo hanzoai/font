@@ -4,7 +4,10 @@ export interface ZenPreset {
   track: number
   note: string
   fits?: string
+  /** Coverage: whole-mark pixel difference as a fraction of target ink. */
   residual?: number
+  /** The worst single feature — stem, bar — as a ratio to the target's. */
+  within?: number
 }
 export declare const PRESETS: Record<'air' | 'book' | 'medium' | 'wide' | 'round', ZenPreset>
 export declare const XHEIGHT_FACTOR: number

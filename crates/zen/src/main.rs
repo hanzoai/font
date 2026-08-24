@@ -3,10 +3,23 @@
 //!   zen kern  <font.ttf> <text> [wght]         per-pair optical corrections
 //!   zen fit   <target.ttf> <candidate.ttf> <text>   best (wght, scaleX, track)
 //!   zen show  <font.ttf>                        metrics and ratios
+//!   zen lux   <font.ttf>                        fit the LUX wordmark, on features
+//!   zen mark  <font.ttf> <text> <wght> <scaleX> <track> <flatten> <thicken>
 
 use std::env;
 use std::fs;
 use zen::{fit, kern, outline::Face};
+
+/// Write to stdout, and treat a closed pipe as the end rather than a crash.
+/// Rust ignores SIGPIPE, so `zen lux … | head -1` made `println!` panic with
+/// "failed printing to stdout: Broken pipe" — a tool that exists to be piped
+/// should not die of being piped.
+fn out(s: &str) {
+    use std::io::Write;
+    if std::io::stdout().write_all(s.as_bytes()).is_err() {
+        std::process::exit(0)
+    }
+}
 
 fn die(msg: &str) -> ! {
     eprintln!("{msg}");
@@ -85,10 +98,37 @@ fn main() {
                          f.upem, f.cap, f.xheight, stem / f.cap);
             }
         }
+        Some("lux") => {
+            if a.len() < 2 {
+                die("zen lux <font>")
+            }
+            let bytes = read(&a[1]);
+            let track: f32 = a.get(2).and_then(|s| s.parse().ok()).unwrap_or(-0.04);
+            let c = zen::lux::fit(&bytes, track).unwrap_or_else(|| die("no candidate"));
+            out(&format!("wght {:.0} · scaleX {:.3} · track {:+.3}em · flatten · thicken {:.0}\n",
+                         c.wght, c.scale_x, c.track, c.thicken));
+            out(&format!("{:<10}{:>9}{:>9}{:>9}\n", "feature", "drawn", "zen", "off"));
+            for ((n, got), (_, want)) in c.got.named().iter().zip(zen::lux::DRAWN.named()) {
+                out(&format!("{n:<10}{want:>9.4}{got:>9.4}{:>8.1}%\n", (got / want - 1.0) * 100.0));
+            }
+        }
+        Some("mark") => {
+            if a.len() < 8 {
+                die("zen mark <font> <text> <wght> <scaleX> <track> <flatten 0|1> <thicken>")
+            }
+            let bytes = read(&a[1]);
+            let n = |i: usize| -> f32 { a[i].parse().unwrap_or_else(|_| die(&format!("bad number: {}", a[i]))) };
+            let face = Face::new(&bytes, n(3)).unwrap_or_else(|e| die(&e));
+            let m = zen::shape::mark(&face, &a[2], n(5), a[6] == "1", n(7), zen::lux::NO_THICKEN)
+                .unwrap_or_else(|e| die(&e));
+            out(&m.svg(n(4), 1.0));
+        }
         _ => {
             eprintln!("zen kern <font> <text> [wght]");
             eprintln!("zen fit  <target> <candidate> <text>");
             eprintln!("zen show <font>");
+            eprintln!("zen lux  <font> [track]");
+            eprintln!("zen mark <font> <text> <wght> <scaleX> <track> <flatten> <thicken>");
             std::process::exit(2)
         }
     }

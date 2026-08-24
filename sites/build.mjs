@@ -109,16 +109,18 @@ function page(key, b) {
 
   const wideNote = b.display === 'wide'
     ? `<p class="note"><strong>Zen Wide transforms</strong>, so its layout box stays the
-       untransformed width — give it room or clip its container. It is fitted to
-       <strong>the LUX wordmark</strong> by pixel residual: ${(PRESETS.wide.residual * 100).toFixed(1)}%
-       against the drawn mark, and 739px wide where the mark is 741. It was fitted to a
-       licensed display face first, which is a different target and read as an 83px
-       overhang beside the very mark it was meant to sit with.</p>
-      <p class="note">The wordmark is <strong>set, not drawn</strong>. Cutting it from
-       Zen wants one thing the preset cannot do, because it is an outline operation
-       rather than a setting: Zen's round forms drop 16 units below the baseline, which
-       is right for type and wrong here — the drawn U is flat. Flattening it takes the
-       residual to 16.8%.</p>` : ''
+       untransformed width — give it room or clip its container. It is set to sit with
+       <strong>the LUX wordmark</strong>: same width, same stem, within
+       ${(PRESETS.wide.within * 100).toFixed(1)}% on every measurement. It was fitted to a
+       licensed display face first, which is a different target, and beside the very
+       mark it was meant to accompany it ran 22% fat in the stems.</p>
+      <p class="note">The wordmark itself is <strong>set, not drawn</strong>, and it
+       needs one thing this preset cannot: the drawn LUX is nearly monoline — its bars
+       are 0.90 of its stems where Zen's are 0.58 — and no weight reaches that, because
+       weight moves bars and stems together. Cutting the mark adds the bars back as an
+       outline operation. Type set beside it therefore carries slightly lighter
+       horizontals than the mark does, which is the ordinary relationship between a
+       logo and its companion text.</p>` : ''
 
   const wm = b.wordmark
   const wmSection = !wm ? '' : `
@@ -224,8 +226,8 @@ td.l{color:var(--dim);font-size:13.5px}
   <p>Five settings ship with the family. ${b.name} uses
   <strong>${b.uses.map((u) => '.zen-' + u).join('</strong>, <strong>')}</strong> —
   and the others are there when a surface needs them. Each is a point in Zen's own
-  parameter space; two were fitted to the faces they replace by pixel residual, so
-  those swaps hold on measurement rather than on taste.</p>
+  parameter space, and three were fitted rather than chosen — so those swaps hold on
+  measurement rather than on taste.</p>
   <div class="scroll"><table>
     <thead><tr><th>Preset</th><th>wght</th><th>scaleX</th><th>track</th><th class="l">What it is for</th></tr></thead>
     <tbody>${presetRows}</tbody>
