@@ -3,6 +3,7 @@
 //!   zen kern  <font.ttf> <text> [wght]         per-pair optical corrections
 //!   zen fit   <target.ttf> <candidate.ttf> <text>   best (wght, scaleX, track)
 //!   zen show  <font.ttf>                        metrics and ratios
+//!   zen cut   <font.ttf> <out.ttf> <axis=value> [forms] [family] — a static cut
 //!   zen lux   <font.ttf>                        fit the LUX wordmark, on features
 //!   zen even  <font.ttf> <wght> <scaleX> <thicken> <diag-wght>  stroke spread, A-Z
 //!   zen mark  <font.ttf> <text> <wght> <scaleX> <track> <flatten> <thicken> <diag-wght>
@@ -98,6 +99,29 @@ fn main() {
                 println!("wght {w:.0}: upem {} cap {} xh {}  L adv {adv:.0} stem {stem:.0} ({:.3} cap)",
                          f.upem, f.cap, f.xheight, stem / f.cap);
             }
+        }
+        Some("cut") => {
+            if a.len() < 4 {
+                die("zen cut <font> <out.ttf> <axis=value,…> [ss01,ss09] [family]")
+            }
+            let axes: Vec<(&str, f32)> = a[3]
+                .split(',')
+                .filter_map(|pair| pair.split_once('='))
+                .filter_map(|(tag, v)| v.trim().parse().ok().map(|v| (tag.trim(), v)))
+                .collect();
+            if axes.is_empty() {
+                die("nowhere to cut — say wght=497 or ELSH=40")
+            }
+            let forms: Vec<&str> = a.get(4).map(String::as_str).unwrap_or("")
+                .split(',').map(str::trim).filter(|t| t.len() == 4).collect();
+            let bytes = read(&a[1]);
+            let family = a.get(5).map(String::as_str).unwrap_or("Zen");
+            let notice = "Copyright 2026 Hanzo AI, Inc. (https://font.hanzo.ai)";
+            let file = zen::instance::instance(&bytes, &axes, 1.0, 0.0, &forms, family, "Regular", notice)
+                .unwrap_or_else(|e| die(&e.to_string()));
+            fs::write(&a[2], &file).unwrap_or_else(|e| die(&format!("{}: {e}", a[2])));
+            out(&format!("{} — {} bytes at {}{}\n", a[2], file.len(), a[3],
+                         if forms.is_empty() { String::new() } else { format!(" with {}", forms.join(" ")) }));
         }
         Some("lux") => {
             if a.len() < 2 {
@@ -211,6 +235,7 @@ fn main() {
             eprintln!("zen kern <font> <text> [wght]");
             eprintln!("zen fit  <target> <candidate> <text>");
             eprintln!("zen show <font>");
+            eprintln!("zen cut  <font> <out.ttf> <axis=value,…> [ss01,ss09] [family]");
             eprintln!("zen even  <font> <wght> <scaleX> <thicken> <diag-wght> [text]");
             eprintln!("zen check <font> <wght> <scaleX> <track> <thicken> <diag-wght>");
             eprintln!("zen lux  <font> [track]");

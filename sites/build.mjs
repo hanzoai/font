@@ -37,19 +37,30 @@ const FACE = Object.fromEntries(Object.entries(FILE).map(
    bitmap is drawn out of. */
 const CUTS = [['Square', 1], ['Circle', 20], ['Grid', 40], ['Triangle', 60], ['Line', 80]]
 
-/* The stylistic sets, each with the letters it actually reaches. A toggle shows
-   its own letter set both ways, so the page demonstrates rather than asserts.
-   `sans` and `mono` list where each set exists — Mono has no ss05. */
+/* The stylistic sets. A set does not run the same way in every family — Mono
+   ships the slashed zero and ss09 takes the slash OUT, where Sans ships the
+   plain one and ss09 puts it in — so each family gets its own sentence, and the
+   presence of a sentence is what says the set exists there. The toggle shows
+   the letter both ways regardless, which is the part that cannot be wrong. */
 const FORMS = [
-  { tag: 'ss01', letters: 'a', name: 'single-storey a', on: ['sans', 'mono', 'pixel'] },
-  { tag: 'ss02', letters: 'a', name: 'a second a', on: ['sans', 'mono', 'pixel'] },
-  { tag: 'ss03', letters: 'l', name: 'tailed l', on: ['sans', 'mono', 'pixel'] },
-  { tag: 'ss04', letters: 'R', name: 'straight-leg R', on: ['sans', 'mono', 'pixel'] },
-  { tag: 'ss05', letters: 'I', name: 'serifed I', on: ['sans', 'pixel'] },
-  { tag: 'ss06', letters: 'G', name: 'spurred G', on: ['sans', 'mono', 'pixel'] },
-  { tag: 'ss07', letters: '→', name: 'lighter arrows', on: ['sans', 'mono'] },
-  { tag: 'ss08', letters: 'Ä', name: 'flatter accents', on: ['sans', 'mono'] },
-  { tag: 'ss09', letters: '0', name: 'slashed zero', on: ['sans', 'mono', 'pixel'] },
+  { tag: 'ss01', letters: 'a', on: {
+    sans: 'a, single-storey', mono: 'a, single-storey', pixel: 'a, single-storey' } },
+  { tag: 'ss02', letters: 'a', on: {
+    sans: 'a, the other single-storey', mono: 'a, the other single-storey',
+    pixel: 'a, the other single-storey' } },
+  { tag: 'ss03', letters: 'l', on: {
+    sans: 'l, with a tail', mono: 'l, a tail instead of a foot', pixel: 'l, with a tail' } },
+  { tag: 'ss04', letters: 'R', on: {
+    sans: 'R, straight leg', mono: 'R, straight leg', pixel: 'R, straight leg' } },
+  { tag: 'ss05', letters: 'I', on: { sans: 'I, with serifs', pixel: 'I, with serifs' } },
+  { tag: 'ss06', letters: 'G', on: {
+    sans: 'G, with a spur', mono: 'G, with a spur', pixel: 'G, with a spur' } },
+  { tag: 'ss07', letters: '→', on: { sans: 'the arrows, redrawn', mono: 'the arrows, redrawn' } },
+  { tag: 'ss08', letters: 'Ä', on: {
+    sans: 'accents, round dots', mono: 'accents, round dots' } },
+  { tag: 'ss09', letters: '0', on: {
+    sans: 'the zero takes a slash, the one loses its foot',
+    mono: 'the zero drops its slash', pixel: 'the zero drops its slash' } },
 ]
 
 const SIZES = [['Display', 64], ['Heading', 34], ['Subhead', 22], ['Body', 16], ['Small', 13]]
@@ -138,8 +149,8 @@ function page(b) {
   ).join('\n')
 
   const forms = FORMS.map((f) =>
-    `<button class="form" data-tag="${f.tag}" data-on="${f.on.join(' ')}" type="button"
-      title="${f.name}"><span class="off">${f.letters}</span><span class="on"
+    `<button class="form" data-tag="${f.tag}" data-on="${JSON.stringify(f.on).replace(/"/g, '&quot;')}"
+      type="button"><span class="off">${f.letters}</span><span class="on"
       style="font-feature-settings:'${f.tag}' 1">${f.letters}</span
       ><em>${f.tag}</em></button>`).join('\n')
 
@@ -368,8 +379,10 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
 <section class="reveal">
   <div class="head"><span class="eyebrow">03 · Zen Mono</span>
     <h2>Cut for the terminal</h2></div>
-  <p>One width for every glyph, and the pairs a screen of code turns on kept apart:
-  the zero carries a slash, the l a tail, the one a flag.</p>
+  <p>Every glyph is 0.6 em wide, so a column of code is a column. The pairs a
+  screen of code turns on are kept apart out of the box: <strong>the zero comes
+  slashed</strong>, and <code>1</code>, <code>l</code> and <code>I</code> each
+  stand on a foot, so none of them is a bare stroke.</p>
   <div class="term">
     <div class="bar"><i></i><i></i><i></i></div>
     <pre>${CODE.replace(/</g, '&lt;')}</pre>
@@ -382,8 +395,10 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
     <div>{ } [ ] ( )<span>the brackets</span></div>
     <div>=&gt; !== &lt;=<span>the operators</span></div>
   </div>
-  <p class="note">Set <code>ss09</code> for the slashed zero and <code>ss03</code> for
-  the tailed l — both are in the editor above, and both survive into a cut you take.</p>
+  <p class="note">The sets go the other way here, because the defaults already
+  favour code: <code>ss09</code> takes the slash back out of the zero and
+  <code>ss03</code> swaps the l's foot for a tail. Both are in the editor above,
+  and both survive into a cut you take.</p>
 </section>
 
 <section class="reveal">
@@ -471,10 +486,11 @@ function draw() {
   $('var-note').textContent = pixel
     ? 'one file, all five elements' : 'one file, weight 100–900'
   for (const f of document.querySelectorAll('.form')) {
-    const has = f.dataset.on.split(' ').includes(state.family)
-    f.hidden = !has
+    const name = JSON.parse(f.dataset.on)[state.family]
+    f.hidden = !name
+    f.title = name || ''
     f.style.fontFamily = \`'\${FACE[state.family]}'\`
-    if (!has && state.forms.delete(f.dataset.tag)) f.setAttribute('aria-pressed', 'false')
+    if (!name && state.forms.delete(f.dataset.tag)) f.setAttribute('aria-pressed', 'false')
   }
 }
 
