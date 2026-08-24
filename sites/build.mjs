@@ -35,8 +35,8 @@ const PX = {
 const BRANDS = {
   hanzo: {
     host: 'font.hanzo.ai', name: 'Hanzo', family: 'Zen',
-    lede: 'The typeface behind the open AI cloud. One variable file, five presets, ' +
-          'and five pixel cuts — every Hanzo surface reads from the same source.',
+    lede: 'One variable file, five presets and five pixel cuts — every Hanzo ' +
+          'surface reads its type from the same source.',
     bg: '#050506', fg: '#ededea', dim: '#8b8b86', faint: '#5b5b57', accent: '#9a9a94',
     line: 'rgba(255,255,255,.085)', line2: 'rgba(255,255,255,.17)', sunk: '#000',
     raised: '#101014',
@@ -77,6 +77,12 @@ const BRANDS = {
   },
 }
 
+/* The number, not a rounding of it. This table is where a reader copies the
+   value FROM, so a rounding here becomes a different number in their stylesheet
+   — toFixed(2) printed 1.49 for a preset the CSS and the crate both set to
+   1.4861. */
+const num = (n) => String(n)
+
 const css = (p) => {
   const out = [`font-variation-settings:'wght' ${p.wght}`]
   if (p.track) out.push(`letter-spacing:${p.track}em`)
@@ -97,8 +103,8 @@ function page(key, b) {
     const mine = b.uses.includes(n)
     return `<tr${mine ? ' class="mine"' : ''}>
       <td><code>.zen-${n}</code>${mine ? ' <span class="tag">in use</span>' : ''}</td>
-      <td>${p.wght}</td><td>${p.scaleX === 1 ? '—' : p.scaleX.toFixed(2)}</td>
-      <td>${p.track ? p.track.toFixed(3) + 'em' : '—'}</td>
+      <td>${p.wght}</td><td>${p.scaleX === 1 ? '—' : num(p.scaleX)}</td>
+      <td>${p.track ? num(p.track) + 'em' : '—'}</td>
       <td class="l">${p.note}</td></tr>`
   }).join('\n')
 
@@ -257,7 +263,7 @@ td.l{color:var(--dim);font-size:13.5px}
 
 <section>
   <div class="head"><span class="eyebrow">04 · Using it</span>
-    <h2>Two lines</h2></div>
+    <h2>Two imports</h2></div>
   <div class="install">
     <code>pnpm add @hanzo/font</code><br><br>
     <code>import '@hanzo/font/css'</code> &nbsp;<span style="color:var(--faint)">the faces</span><br>
