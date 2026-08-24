@@ -17,8 +17,9 @@
 //!
 //! NEITHER OPERATION NEEDS A POLYGON BOOLEAN, which is why this file has no such
 //! dependency and no rasterise-and-trace step. `flatten` clamps y. `thicken` keeps
-//! the glyph AND a copy shifted up by d — under nonzero winding that pair already
-//! IS their union, so the renderer does the boolean and nothing here has to. A
+//! each OUTER contour and a copy shifted up by d — under nonzero winding that pair
+//! already IS their union, so the renderer does the boolean — and raises each
+//! COUNTER's floor by d, which is that hole's half of the same union. A
 //! vertical stem's edges are at the same x in both copies, so its WIDTH is
 //! untouched and so is the mark's advance. That decouples the three controls:
 //!
@@ -75,29 +76,63 @@ pub fn flatten(g: &Glyph, lo: f32, hi: f32) -> Glyph {
     }
 }
 
+/// Signed area. Positive and negative windings are outer contours and counters;
+/// which sign means which depends on the font, so the rule is "the majority sign
+/// is outer" rather than a constant that is right for TrueType and wrong for CFF.
+fn area(c: &[(f32, f32)]) -> f32 {
+    let n = c.len();
+    (0..n).map(|i| {
+        let (a, b) = (c[i], c[(i + 1) % n]);
+        a.0 * b.1 - b.0 * a.1
+    }).sum::<f32>() / 2.0
+}
+
 /// Add `d` to every horizontal bar; leave every vertical stem and the advance alone.
 ///
-/// The glyph plus a copy of itself shifted UP by d, both kept. Under nonzero
-/// winding that pair IS their union — the Minkowski sum with a vertical segment —
-/// so a horizontal bar spanning [y, y+t] reads as [y, y+t+d], thicker by d and
-/// growing INWARD from the baseline. A vertical stem's edges are at the same x in
-/// both copies, so its width does not change; neither does the advance.
+/// The union of the glyph with a copy of itself shifted UP by d — the Minkowski
+/// sum with a vertical segment. A horizontal bar spanning [y, y+t] becomes
+/// [y, y+t+d]; a vertical stem's edges are at the same x in both, so its width
+/// and the advance do not move.
 ///
-/// Two copies, no boolean, no rasterise-and-trace. The version before this moved
-/// individual points that tested as "top of ink", and the L is the counter-example
-/// that kills the idea: the inner corner of its foot sits INSIDE the stem's x
-/// range, where ink continues upward, so that point correctly refused to move
-/// while the far end of the same edge moved the full d — turning a flat foot into
-/// a wedge. No per-point rule fixes that, because the defect is that a bar's
-/// endpoints do not agree about what they are part of.
+/// OUTER contours and COUNTERS are handled differently. Under nonzero winding two
+/// overlapping outers already read as their union, so the outer half is free.
+/// Duplicating a COUNTER is not: the shifted hole would punch ink out of the
+/// original shape. The union's hole is `H ∩ (H + d)` — the part surviving in both
+/// copies — which for a counter that does not double back is the counter with its
+/// floor raised by d. A clamp, no boolean.
+///
+/// WHAT THIS OPERATION IS FOR, and what it is not:
+///
+/// It is exact on a HORIZONTAL BAR, which is the whole point. It DAMAGES AN
+/// ANGLED OR CURVED TERMINAL: a terminal cut on the diagonal, unioned with itself
+/// shifted up, ends in a step, because the two copies' ends do not align. So it
+/// is a wordmark operation on chosen letters, not a face-wide one.
+///
+/// LUX is clean because L, U and X terminate flat or vertically. Measured on the
+/// rest of the alphabet at the amount the wide transform would need (d=90): G, S,
+/// 2, 3, 5 and 9 all step at their terminals. Counters were the first suspect and
+/// were a real bug, fixed above — but fixing them changed nothing, because the
+/// defect was never the holes. Do not reach for this to even out running text.
 pub fn thicken(g: &Glyph, d: f32) -> Glyph {
-    let mut contours = g.contours.clone();
-    if d > 0.0 {
-        contours.extend(
-            g.contours
-                .iter()
-                .map(|c| c.iter().map(|&(x, y)| (x, y + d)).collect()),
-        );
+    if d <= 0.0 {
+        return Glyph { contours: g.contours.clone(), advance: g.advance };
+    }
+    let areas: Vec<f32> = g.contours.iter().map(|c| area(c)).collect();
+    let outer_sign = {
+        let pos: f32 = areas.iter().filter(|a| **a > 0.0).sum();
+        let neg: f32 = areas.iter().filter(|a| **a < 0.0).map(|a| -a).sum();
+        if pos >= neg { 1.0 } else { -1.0 }
+    };
+
+    let mut contours = Vec::with_capacity(g.contours.len() * 2);
+    for (c, a) in g.contours.iter().zip(&areas) {
+        if a * outer_sign > 0.0 {
+            contours.push(c.clone());
+            contours.push(c.iter().map(|&(x, y)| (x, y + d)).collect());
+        } else {
+            let floor = c.iter().fold(f32::MAX, |m, p| m.min(p.1)) + d;
+            contours.push(c.iter().map(|&(x, y)| (x, y.max(floor))).collect());
+        }
     }
     Glyph { contours, advance: g.advance }
 }
