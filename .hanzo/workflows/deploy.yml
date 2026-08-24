@@ -37,6 +37,7 @@ on:
       - 'sites/**'
       - 'packages/zen/dist/presets.js'
       - 'packages/zen/dist/fonts/**'
+      - 'packages/zen/dist/wasm/**'
       - '.hanzo/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -83,6 +84,11 @@ jobs:
           bytes=$(wc -c < "$d/index.html")
           test "$bytes" -gt 150000 || { echo "::error::$d/index.html is ${bytes}B — the fonts did not inline"; exit 1; }
           grep -q "font-display:block" "$d/index.html" || { echo "::error::$d/index.html uses swap, not block"; exit 1; }
+          # The cutter and the ttf it reads are fetched at download time, so a
+          # missing one is a button that fails rather than a page that looks wrong.
+          for f in wasm/zen.js wasm/zen_bg.wasm fonts/Zen-Variable.ttf; do
+            test -s "$d/$f" || { echo "::error::$d/$f is missing"; exit 1; }
+          done
           echo "${{ matrix.brand }}: ${bytes} bytes"
 
       - name: publish ${{ matrix.slug }}
