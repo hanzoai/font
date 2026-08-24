@@ -23,12 +23,12 @@ export const PRESETS = {
     "residual": 0.254
   },
   "wide": {
-    "wght": 675,
-    "scaleX": 1.46,
-    "track": -0.04,
+    "wght": 625,
+    "scaleX": 1.55,
+    "track": -0.08,
     "note": "Monumental caps. Set to sit with the LUX wordmark.",
     "fits": "the LUX wordmark",
-    "within": 0.032
+    "within": 0.038
   },
   "round": {
     "wght": 900,

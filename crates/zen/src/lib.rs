@@ -15,6 +15,7 @@ pub mod lux;
 pub mod outline;
 pub mod presets;
 pub mod shape;
+pub mod svg;
 
 #[cfg(feature = "wasm")]
 pub mod web;

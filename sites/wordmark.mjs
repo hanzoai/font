@@ -47,15 +47,16 @@ if (!existsSync(ZEN)) {
  *          forms; lowercase needs nothing.
  */
 const MARKS = [
-  { name: 'lux',   text: 'LUX',   wght: 675, scaleX: 1.460, track: -0.040, flatten: 1, thicken: 72 },
-  { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.000, track: -0.0286, flatten: 0, thicken: 0 },
-  { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.000, track: -0.025, flatten: 0, thicken: 0 },
+  { name: 'lux',   text: 'LUX',   wght: 625, scaleX: 1.545, track: -0.080, flatten: 1, thicken: 78, diag: 0.6 },
+  { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.000, track: -0.0286, flatten: 0, thicken: 0, diag: 0 },
+  { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.000, track: -0.025, flatten: 0, thicken: 0, diag: 0 },
 ]
 
 mkdirSync(OUT, { recursive: true })
 for (const m of MARKS) {
   const svg = execFileSync(ZEN, ['mark', FONT, m.text,
-    String(m.wght), String(m.scaleX), String(m.track), String(m.flatten), String(m.thicken)],
+    String(m.wght), String(m.scaleX), String(m.track), String(m.flatten),
+    String(m.thicken), String(m.diag)],
     { encoding: 'utf8', maxBuffer: 8 << 20 })
   writeFileSync(join(OUT, `${m.name}.svg`), svg)
   console.log(`  ${m.name.padEnd(6)} ${m.text.padEnd(6)} wght ${m.wght} · ${m.scaleX}× · ` +
