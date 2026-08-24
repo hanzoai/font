@@ -10,16 +10,14 @@ export const PRESETS = {
     "wght": 497,
     "scaleX": 1,
     "track": 0,
-    "note": "Text. Fitted to a text face.",
-    "fits": "a text face",
+    "note": "Text. The reading weight.",
     "residual": 0.297
   },
   "medium": {
     "wght": 606,
     "scaleX": 1,
     "track": 0,
-    "note": "UI emphasis. Fitted to a text face — within 1.6% on every outline ratio.",
-    "fits": "a text face",
+    "note": "UI emphasis. A step up from book without becoming display.",
     "residual": 0.254
   },
   "wide": {

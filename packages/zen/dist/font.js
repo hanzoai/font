@@ -54,7 +54,6 @@ export const ZenSans = localFont({
     "system-ui",
     "-apple-system",
     "BlinkMacSystemFont",
-    "Inter",
     "Segoe UI",
     "Roboto",
     "sans-serif",

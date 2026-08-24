@@ -33,13 +33,13 @@ export const PRESETS = {
   },
   book: {
     wght: 497, scaleX: 1, track: 0,
-    note: 'Text. Fitted to a text face.',
-    fits: 'a text face', residual: 0.297,
+    note: 'Text. The reading weight.',
+    residual: 0.297,
   },
   medium: {
     wght: 606, scaleX: 1, track: 0,
-    note: 'UI emphasis. Fitted to a text face — within 1.6% on every outline ratio.',
-    fits: 'a text face', residual: 0.254,
+    note: 'UI emphasis. A step up from book without becoming display.',
+    residual: 0.254,
   },
   wide: {
     // The wordmark's own geometry, so caps set here sit with it rather than
@@ -67,16 +67,16 @@ export const PRESETS = {
   },
 }
 
-/* A surface REPLACING the previous face multiplies its font-size by this; a surface simply
-   using Zen does not. It is deliberately not baked into `book`/`medium` — the
-   preset is a voice, this is a migration correction, and braiding them would
-   apply it to type that never saw the previous face.
+/* A surface MIGRATING off a previous text face multiplies its font-size by this;
+   a surface simply using Zen does not. It is deliberately not baked into
+   `book`/`medium` — the preset is a voice, this is a migration correction, and
+   braiding them would apply it to type that was always Zen.
 
    DIVIDE BY THE EM, NOT THE CAP, and that is the whole subtlety. `font-size` and
    `size-adjust` both scale the em, so matching x-heights means matching
    x-per-em:
 
-     the previous face  xh 494 / upem 1000 = 0.4940
+     prior  xh 494 / upem 1000 = 0.4940
      Zen    xh 530 / upem 1000 = 0.5300
      factor = 0.4940 / 0.5300  = 0.9321
 
@@ -84,7 +84,7 @@ export const PRESETS = {
    (0.7180 / 0.7465). Those cap ratios are correct and the arithmetic on them is
    correct — it just answers a question nobody asked, because no CSS property
    scales a glyph by its cap height. The result was type still 3.2% larger than
-   the the previous face it replaced: better than the 6.8% of no correction at all, and close
+   what it replaced: better than the 6.8% of no correction at all, and close
    enough to read as done while being wrong. Any surface that applied 0.962
    should move to this value. */
 export const XHEIGHT_FACTOR = 0.9321

@@ -12,10 +12,10 @@
 /* Thin display. Hanzo’s headline voice. */
 .zen-air{font-variation-settings:'wght' 220;letter-spacing:-0.03em}
 
-/* Text. Fitted to a text face. (29.7% coverage residual) */
+/* Text. The reading weight. (29.7% coverage residual) */
 .zen-book{font-variation-settings:'wght' 497}
 
-/* UI emphasis. Fitted to a text face — within 1.6% on every outline ratio. (25.4% coverage residual) */
+/* UI emphasis. A step up from book without becoming display. (25.4% coverage residual) */
 .zen-medium{font-variation-settings:'wght' 606}
 
 /* Monumental caps. Set to sit with the LUX wordmark. (within 2.6% on every feature) */
