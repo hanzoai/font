@@ -39,32 +39,37 @@ build.stamp: venv venv-pixel sources/config-Zen.yaml $(SOURCES)
 	# the clean `rm -rf fonts` above drops them). Restore the committed assets the
 	# release zip and npm package consume.
 	git checkout -- fonts/ZenPixel/otf fonts/ZenPixel/ttf fonts/ZenPixel/webfonts
+	. venv/bin/activate; python3 packages/zen/scripts/name.py
 	$(MAKE) copy-npm-fonts
 	$(MAKE) create-release-zip
 	touch build.stamp
 
 copy-npm-fonts:
 	# Clear any pre-existing build artifacts
-	rm -rf packages/next/dist/fonts
+	rm -rf packages/zen/dist/fonts
 	# Copy over the relevant font files
-	mkdir -p packages/next/dist/fonts/zen-sans packages/next/dist/fonts/zen-mono packages/next/dist/fonts/zen-pixel
-	cp fonts/Zen/ttf/*.ttf packages/next/dist/fonts/zen-sans/
-	cp fonts/Zen/webfonts/*.woff2 packages/next/dist/fonts/zen-sans/
-	cp fonts/Zen/variable/*.ttf packages/next/dist/fonts/zen-sans/
-	cp fonts/ZenMono/ttf/*.ttf packages/next/dist/fonts/zen-mono/
-	cp fonts/ZenMono/webfonts/*.woff2 packages/next/dist/fonts/zen-mono/
-	cp fonts/ZenMono/variable/*.ttf packages/next/dist/fonts/zen-mono/
-	cp fonts/ZenPixel/webfonts/*.woff2 packages/next/dist/fonts/zen-pixel/
+	mkdir -p packages/zen/dist/fonts/zen-sans packages/zen/dist/fonts/zen-mono packages/zen/dist/fonts/zen-pixel
+	cp fonts/Zen/ttf/*.ttf packages/zen/dist/fonts/zen-sans/
+	cp fonts/Zen/webfonts/*.woff2 packages/zen/dist/fonts/zen-sans/
+	cp fonts/Zen/variable/*.ttf packages/zen/dist/fonts/zen-sans/
+	cp fonts/ZenMono/ttf/*.ttf packages/zen/dist/fonts/zen-mono/
+	cp fonts/ZenMono/webfonts/*.woff2 packages/zen/dist/fonts/zen-mono/
+	cp fonts/ZenMono/variable/*.ttf packages/zen/dist/fonts/zen-mono/
+	cp fonts/ZenPixel/webfonts/*.woff2 packages/zen/dist/fonts/zen-pixel/
+	# Zen Pixel's five cuts are one axis, so the variable carries all five and
+	# morphs between them. gftools writes it as ttf only; the web wants woff2.
+	. venv/bin/activate; python3 -c "from fontTools.ttLib import TTFont; f=TTFont('fonts/ZenPixel/variable/ZenPixel[ELSH].ttf'); f.flavor='woff2'; f.save('packages/zen/dist/fonts/zen-pixel/ZenPixel-Variable.woff2')"
+	cp 'fonts/ZenPixel/variable/ZenPixel[ELSH].ttf' packages/zen/dist/fonts/zen-pixel/ZenPixel-Variable.ttf
 	# Apparently there is a naming mismatch between the font files for npm distribution and the actual font files,
 	# so we need to rename them to the correct names.
-	cd packages/next/dist/fonts/zen-sans && \
+	cd packages/zen/dist/fonts/zen-sans && \
 		mv Zen-ExtraLight.ttf Zen-UltraLight.ttf && \
 		mv Zen-ExtraLight.woff2 Zen-UltraLight.woff2 && \
 		mv Zen-ExtraBold.ttf Zen-UltraBlack.ttf && \
 		mv Zen-ExtraBold.woff2 Zen-UltraBlack.woff2 && \
 		mv 'Zen[wght].ttf' Zen-Variable.ttf && \
 		mv 'Zen[wght].woff2' Zen-Variable.woff2
-	cd packages/next/dist/fonts/zen-mono && \
+	cd packages/zen/dist/fonts/zen-mono && \
 		mv ZenMono-ExtraLight.ttf ZenMono-UltraLight.ttf && \
 		mv ZenMono-ExtraLight.woff2 ZenMono-UltraLight.woff2 && \
 		mv ZenMono-ExtraBold.ttf ZenMono-UltraBlack.ttf && \
@@ -77,7 +82,7 @@ create-release-zip:
 	cp -r fonts/* zen-font/
 	cp documentation/DESCRIPTION.en_us.html zen-font/ || true
 	cp documentation/article/ARTICLE.en_us.html zen-font/ || true
-	cp OFL.txt zen-font/
+	cp LICENSE.txt zen-font/
 	zip -r zen-font.zip zen-font
 	rm -rf zen-font
 
