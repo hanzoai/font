@@ -126,7 +126,10 @@ fn main() {
             let face = Face::new(&bytes, n(3)).unwrap_or_else(|e| die(&e));
             let m = zen::shape::mark(&face, &a[2], n(5), a[6] == "1", n(7), n(8))
                 .unwrap_or_else(|e| die(&e));
-            out(&m.svg(n(4), 1.0));
+            // simplify tolerance, in font units. Optional so a suspected
+            // simplify artefact can be ruled in or out without a rebuild.
+            let tol: f32 = a.get(9).and_then(|s| s.parse().ok()).unwrap_or(1.0);
+            out(&m.svg(n(4), tol));
         }
         Some("even") => {
             if a.len() < 6 {
