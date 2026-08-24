@@ -12,14 +12,14 @@
 /* Thin display. Hanzo’s headline voice. */
 .zen-air{font-variation-settings:'wght' 220;letter-spacing:-0.03em}
 
-/* Text. Fitted to Basel Grotesk Book. (29.7% residual) */
+/* Text. Fitted to Basel Grotesk Book. (29.7% coverage residual) */
 .zen-book{font-variation-settings:'wght' 497}
 
-/* UI emphasis. Fitted to Basel Grotesk Medium — within 1.6% on every outline ratio. (25.4% residual) */
+/* UI emphasis. Fitted to Basel Grotesk Medium — within 1.6% on every outline ratio. (25.4% coverage residual) */
 .zen-medium{font-variation-settings:'wght' 606}
 
-/* Monumental caps. Fitted to the LUX wordmark. (17.6% residual) */
-.zen-wide{font-variation-settings:'wght' 845;letter-spacing:-0.04em;transform:scaleX(1.4);transform-origin:left center;display:inline-block}
+/* Monumental caps. Set to sit with the LUX wordmark. (within 3.2% on every feature) */
+.zen-wide{font-variation-settings:'wght' 675;letter-spacing:-0.04em;transform:scaleX(1.46);transform-origin:left center;display:inline-block}
 
 /* Heavy and friendly at large sizes. Zoo’s display voice. */
 .zen-round{font-variation-settings:'wght' 900;letter-spacing:-0.018em}
@@ -28,7 +28,7 @@
   --zen-air-wght:220;--zen-air-track:-0.03em;
   --zen-book-wght:497;
   --zen-medium-wght:606;
-  --zen-wide-wght:845;--zen-wide-track:-0.04em;--zen-wide-scale-x:1.4;
+  --zen-wide-wght:675;--zen-wide-track:-0.04em;--zen-wide-scale-x:1.46;
   --zen-round-wght:900;--zen-round-track:-0.018em;
   --zen-basel-xheight-factor:0.9321;
 }
