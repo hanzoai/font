@@ -57,11 +57,27 @@ jobs:
           KMS_SECRET_ENV: ${{ vars.KMS_SECRET_ENV || 'prod' }}
           KMS_NPM_PATH: ${{ vars.KMS_NPM_PATH || '' }}
         run: |
-          token=$(curl -fsS "${KMS_ENDPOINT}/v1/kms/auth/login" \
-            -H 'Content-Type: application/json' \
-            -d "{\"clientId\":\"${KMS_CLIENT_ID}\",\"clientSecret\":\"${KMS_CLIENT_SECRET}\"}" \
-            | jq -r '.accessToken // empty')
-          [ -n "$token" ] || { echo "::error::KMS login failed at ${KMS_ENDPOINT}"; exit 1; }
+          # Build the body with jq so a quote or backslash in the secret cannot
+          # break the JSON — a hand-interpolated "{\"clientId\":\"$X\"}" does.
+          body=$(jq -nc --arg id "$KMS_CLIENT_ID" --arg sec "$KMS_CLIENT_SECRET" \
+                   '{clientId:$id, clientSecret:$sec}')
+          # No -f here either, for the same reason it is absent below: -f throws
+          # the body away, so a failure arrives as `jq: Invalid numeric literal`
+          # with no status and no message. That cost a whole run to diagnose.
+          # Capture the status and the body, and say which one was wrong.
+          out=$(curl -sS -w '\n%{http_code}' "${KMS_ENDPOINT}/v1/kms/auth/login" \
+                  -H 'Content-Type: application/json' --data-binary "$body")
+          code=${out##*$'\n'}
+          resp=${out%$'\n'*}
+          if [ "$code" != "200" ]; then
+            echo "::error::KMS login returned HTTP $code at ${KMS_ENDPOINT}: $(printf '%s' "$resp" | head -c 200)"
+            exit 1
+          fi
+          token=$(printf '%s' "$resp" | jq -r '.accessToken // empty' 2>/dev/null || true)
+          [ -n "$token" ] || {
+            echo "::error::KMS login was 200 but carried no accessToken: $(printf '%s' "$resp" | head -c 200)"
+            exit 1
+          }
           # Org-scoped by the token's owner claim, not by a path segment. The
           # flat form answers {name, env, value}; the older
           # /v1/kms/orgs/<org>/secrets/… form 404s here.
