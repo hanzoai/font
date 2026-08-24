@@ -6,7 +6,7 @@
 //! the whole reason for the port: the fitter and the kerner become something a
 //! designer runs live in a specimen page while dragging a slider.
 
-use crate::{fit, kern, outline::Face, PRESETS};
+use crate::{fit, instance, kern, outline::Face, PRESETS};
 use wasm_bindgen::prelude::*;
 
 fn err(e: impl core::fmt::Display) -> JsValue {
@@ -98,9 +98,35 @@ pub fn presets() -> JsValue {
     let rows: Vec<String> = PRESETS
         .iter()
         .map(|p| format!(
-            r#"{{"name":"{}","wght":{:.0},"scaleX":{:.2},"track":{:.3},"residual":{}}}"#,
-            p.name, p.wght, p.scale_x, p.track,
-            p.residual.map_or("null".into(), |r| format!("{r:.3}"))))
+            r#"{{"name":"{}","wght":{:.0},"scaleX":{:.4},"track":{:.3}}}"#,
+            p.name, p.wght, p.scale_x, p.track))
         .collect();
     JsValue::from_str(&format!("[{}]", rows.join(",")))
+}
+
+/// Cut a static font out of the variable one, at the settings on the page.
+///
+/// `at` names the place on the axes, `wght=497` or `ELSH=40`, comma separated.
+/// `features` are stylistic set tags (`ss01`, `ss04`) to bake in, comma
+/// separated too. `width` and `track` are baked into the outlines and advances,
+/// so the file needs no CSS to carry the setting. The bytes come back for the page to hand to a download — nothing
+/// is uploaded and no server sees the font or the settings.
+#[wasm_bindgen]
+pub fn cut(
+    font: &[u8],
+    at: &str,
+    width: f32,
+    track: f32,
+    features: &str,
+    family: &str,
+    style: &str,
+    notice: &str,
+) -> Result<Vec<u8>, JsValue> {
+    let axes: Vec<(&str, f32)> = at
+        .split(',')
+        .filter_map(|pair| pair.split_once('='))
+        .filter_map(|(tag, value)| value.trim().parse().ok().map(|v| (tag.trim(), v)))
+        .collect();
+    let tags: Vec<&str> = features.split(',').map(str::trim).filter(|t| t.len() == 4).collect();
+    instance::instance(font, &axes, width, track, &tags, family, style, notice).map_err(err)
 }

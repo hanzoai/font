@@ -18,8 +18,8 @@ crate-type = ["cdylib", "rlib"]
 # needs IS a rasteriser — taking tiny-skia for the fitter would mean two ways to
 # ask the same question, and several hundred KB of wasm for the privilege.
 [dependencies]
-skrifa = { version = "0.22", default-features = false, features = ["std"] }
-write-fonts = { version = "0.28", default-features = false, optional = true }
+skrifa = { version = "0.37", default-features = false, features = ["std"] }
+write-fonts = { version = "0.52", default-features = false, features = ["tables", "read"], optional = true }
 wasm-bindgen = { version = "0.2", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
@@ -29,8 +29,8 @@ default = ["cli"]
 # The identity rewrite needs a serialiser; the measurements do not, so a wasm
 # build that only fits and kerns does not carry one.
 name = ["dep:write-fonts"]
+wasm = ["dep:wasm-bindgen", "dep:serde", "dep:serde_json", "name"]
 cli = []
-wasm = ["dep:wasm-bindgen", "dep:serde", "dep:serde_json"]
 
 [[bin]]
 name = "zen"

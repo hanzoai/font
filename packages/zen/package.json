@@ -1,7 +1,7 @@
 {
   "name": "@hanzo/font",
-  "version": "1.8.9",
-  "description": "Zen — the Hanzo type family: sans, mono and pixel, with brand presets.",
+  "version": "1.8.10",
+  "description": "Zen \u2014 the Hanzo type family: sans, mono and pixel, with brand presets and a wasm cutter.",
   "main": "./dist/font.js",
   "type": "module",
   "module": "./dist/font.js",
@@ -18,13 +18,16 @@
     "directory": "packages/zen"
   },
   "keywords": [
+    "font",
+    "hanzo",
+    "instancer",
+    "typeface",
+    "variable font",
+    "wasm",
     "zen",
-    "zen sans",
     "zen mono",
     "zen pixel",
-    "hanzo",
-    "font",
-    "typeface"
+    "zen sans"
   ],
   "exports": {
     ".": {
@@ -57,6 +60,8 @@
       "default": "./dist/presets.js"
     },
     "./presets.css": "./dist/presets.css",
+    "./wasm": "./dist/wasm/zen.js",
+    "./wasm/zen_bg.wasm": "./dist/wasm/zen_bg.wasm",
     "./dist/fonts/*": "./dist/fonts/*"
   },
   "license": "SIL OPEN FONT LICENSE",
