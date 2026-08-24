@@ -294,19 +294,21 @@ pub fn mark_kerned(
         // one letter by another letter's metrics.
         let from = if diagonal { diag_face.unwrap_or(face) } else { face };
         let g = from.glyph(ch).ok_or_else(|| format!("no glyph for {ch:?}"))?;
+        // `head` is how many leading letters are the MARK. Everything that
+        // reshapes toward the drawing applies to those and stops: "LUX LINK"
+        // has two Ls and only the first one is the logo.
+        let mark = i < head;
         // Before the advance is read, so the letters after it close up behind
         // the new width instead of leaving the gap this exists to remove.
         let g = match wide.iter().find(|(c, _)| *c == ch) {
-            Some(&(_, dx)) if dx != 0.0 => extend(&g, face.cap, dx),
+            Some(&(_, dx)) if mark && dx != 0.0 => extend(&g, face.cap, dx),
             _ => g,
         };
         let adv = g.advance;
-        // `head` is how many leading letters are the MARK. Past it the letters
-        // are a word set beside the mark, and they do not take the bar amount:
-        // thicken steps a terminal that is not flat, so LUX takes it cleanly
-        // while the C, S, G and R of a word beside it notch. Blanket-thickening
-        // "LUX CREDIT" fixes the LUX and visibly breaks the C and the R's bowl.
-        let mark = i < head;
+        // Past the mark, thicken is wrong for a different reason: it steps a
+        // terminal that is not flat, so LUX takes it cleanly while the C, S, G
+        // and R of a word beside it notch. Blanket-thickening "LUX CREDIT"
+        // fixes the LUX and visibly breaks the C and the R's bowl.
         let g = if mark && !diagonal && d > 0.0 && takes_thicken(&g, d) {
             thicken(&g, d)
         } else {

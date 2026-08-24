@@ -58,15 +58,29 @@ if (!existsSync(ZEN)) {
  *          optical adjustment. Caps would need the Z kerned against two round
  *          forms; lowercase needs nothing.
  */
+/* The LUX cut, solved against the drawing rather than chosen.
+ *
+ * The drawn mark is a 63x17 grid, and reading it off the artwork gives four
+ * targets no single control reaches: the L is 0-18 so its foot runs right up to
+ * the U at 18; the U's right stem ends at 38.728; the X's arm clears the U by
+ * 0.102 cap at the top; the whole thing is 63/17 wide.
+ *
+ *   foot    lengthens the L's arm, stem untouched      -> L width
+ *   lu      closes what is left                        -> the foot touches
+ *   ux      the X's distance from the U                -> the top gap
+ *   scaleX  the run's total width                      -> 3.7059
+ *
+ * Solved together, because each moves the others: `foot` pushes the U right,
+ * `ux` pushes the X right, and both change the width that `scaleX` sets.
+ *
+ * ux is POSITIVE. "The X tucks under the U" was read off the artwork, where the
+ * X's arms spring from the U's right stem — they are one fused outline, not two
+ * letters overlapping. A font X kerned to overlap crowds the U instead: the gap
+ * came out 0.020 against the drawing's 0.102, five times too tight.
+ */
 const LUX = {
-  wght: 650, scaleX: 1.5503, track: -0.095, flatten: 1, diag: 750,
-  ux: -0.02, thicken: 90,
-  // The drawn mark is a 63x17 grid: the L is 0-18 and the U starts AT 18, so
-  // the foot runs right up to the bowl. The cut left a gap there and a 2.1%
-  // short L while the mark's TOTAL width was already right, which no scaleX can
-  // fix — it moves all three letters together. `foot` lengthens the L's arm
-  // without touching its stem; `lu` closes the remaining gap.
-  foot: 10.13, lu: -0.00494,
+  wght: 650, scaleX: 1.4996, track: -0.095, flatten: 1, diag: 750,
+  thicken: 92, ux: 0.01917, foot: 27.96, lu: -0.00456,
 }
 
 const MARKS = [
