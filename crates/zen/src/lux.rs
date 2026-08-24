@@ -82,6 +82,22 @@ fn column(m: &Mark, x: f32, cap: f32) -> f32 {
     hits as f32 / n as f32
 }
 
+/// The first ink run down a column, in cap units — the vertical chord of whatever
+/// stroke that column crosses.
+fn column_runs(m: &Mark, x: f32, cap: f32) -> f32 {
+    let n = 600;
+    let mut run = 0.0f32;
+    for i in 0..n {
+        let y = cap * (i as f32 + 0.5) / n as f32;
+        if m.glyphs.iter().any(|(g, off)| inside(g, x - off, y)) {
+            run += cap / n as f32;
+        } else if run > 0.0 {
+            return run / cap;
+        }
+    }
+    run / cap
+}
+
 /// Widths of the ink runs along a horizontal line, in cap units.
 fn row(m: &Mark, y: f32, x0: f32, x1: f32, cap: f32) -> Vec<f32> {
     let n = 1200;
@@ -126,8 +142,18 @@ pub fn features(m: &Mark, scale_x: f32) -> Features {
     // The X's diagonal, read BELOW the crossing where the two arms are separate.
     // At mid height they merge into one run and the "stroke" measures the width
     // of the crossing instead — a number that tracks the letter, not the pen.
+    //
+    // PERPENDICULAR, not horizontal. A horizontal run across a diagonal is
+    // w / sin(theta), so it grows as the diagonal lays down — and `scaleX` lays it
+    // down. Measured that way, 845 x 1.40 and 625 x 1.545 both scored within 1% of
+    // the drawn X while visibly differing, because the shallower one needs a
+    // thinner pen to cut the same horizontal chord. For a straight stroke,
+    // h = w/sin, v = w/cos, so 1/h^2 + 1/v^2 = 1/w^2 — the perpendicular falls out
+    // of one horizontal reading and one vertical, with no angle to estimate.
     let xs = row(m, cap * 0.22, at(0.62), x1, cap);
-    let x_stroke = if xs.is_empty() { 0.0 } else { xs.iter().sum::<f32>() / xs.len() as f32 };
+    let h = if xs.is_empty() { 0.0 } else { xs.iter().sum::<f32>() / xs.len() as f32 * scale_x };
+    let v = column_runs(m, at(0.72), cap);
+    let x_stroke = if h > 0.0 && v > 0.0 { h * v / (h * h + v * v).sqrt() } else { 0.0 };
 
     Features {
         l_stem: ls.first().copied().unwrap_or(0.0) * scale_x,
@@ -135,7 +161,7 @@ pub fn features(m: &Mark, scale_x: f32) -> Features {
         l_arm,
         u_stem: us.first().copied().unwrap_or(0.0) * scale_x,
         u_bottom: column(m, at(P_U_MID), cap),
-        x_stroke: x_stroke * scale_x,
+        x_stroke,
         width: w / cap * scale_x,
     }
 }
@@ -160,7 +186,11 @@ fn deviation(got: &Features, want: &Features) -> f32 {
     [
         (got.l_foot, want.l_foot, 1.4),
         (got.u_bottom, want.u_bottom, 1.4),
-        (got.x_stroke, want.x_stroke, 1.4),
+        // The heaviest weight in the set. A max-deviation objective will trade
+        // any one feature to lower the worst, and the X is what it kept trading:
+        // twice reported as reading thin, twice measured as within tolerance.
+        // Reported beats tolerated.
+        (got.x_stroke, want.x_stroke, 1.8),
         (got.l_arm, want.l_arm, 1.2),
         (got.l_stem, want.l_stem, 1.0),
         (got.u_stem, want.u_stem, 1.0),
@@ -175,7 +205,8 @@ pub struct Cut {
     pub scale_x: f32,
     pub track: f32,
     pub thicken: f32,
-    pub diag: f32,
+    /// The weight diagonal letters are cut at.
+    pub wght_diag: f32,
     pub deviation: f32,
     pub got: Features,
 }
@@ -201,11 +232,12 @@ pub fn fit(bytes: &[u8], src: &str) -> Option<(Cut, Features)> {
         let face = Face::new(bytes, wght).ok()?;
         for ti in 0..=18 {
             let thicken = ti as f32 * 6.0;
-            for di in 0..=6 {
-                let diag = di as f32 * 0.2;
+            for di in 0..=8 {
+                let wght_diag = 550.0 + di as f32 * 50.0;
                 for tk in 0..=5 {
                     let track = -0.02 - tk as f32 * 0.015;
-                    let m = mark(&face, "LUX", track, true, thicken, diag).ok()?;
+                            let dface = Face::new(bytes, wght_diag).ok()?;
+                    let m = mark(&face, "LUX", track, true, thicken, Some(&dface)).ok()?;
                     let raw = features(&m, 1.0);
                     if raw.width <= 0.0 {
                         continue;
@@ -217,7 +249,7 @@ pub fn fit(bytes: &[u8], src: &str) -> Option<(Cut, Features)> {
                     let got = features(&m, scale_x);
                     let dev = deviation(&got, &want);
                     if best.map_or(true, |b: Cut| dev < b.deviation) {
-                        best = Some(Cut { wght, scale_x, track, thicken, diag, deviation: dev, got });
+                        best = Some(Cut { wght, scale_x, track, thicken, wght_diag, deviation: dev, got });
                     }
                 }
             }
@@ -266,12 +298,12 @@ pub fn strokes(
     wght: f32,
     scale_x: f32,
     thicken: f32,
-    diag: f32,
+    _diag: f32,
 ) -> Vec<Stroke> {
     let mut out = Vec::new();
     let Ok(face) = Face::new(bytes, wght) else { return out };
     for ch in text.chars() {
-        let Ok(m) = mark(&face, &ch.to_string(), 0.0, true, thicken, diag) else { continue };
+        let Ok(m) = mark(&face, &ch.to_string(), 0.0, true, thicken, None) else { continue };
         let Some((x0, y0, x1, y1)) = m.box2() else { continue };
         let cap = m.cap;
         let (w, h) = (x1 - x0, y1 - y0);
