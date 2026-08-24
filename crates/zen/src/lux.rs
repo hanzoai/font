@@ -298,53 +298,110 @@ pub fn strokes(
     wght: f32,
     scale_x: f32,
     thicken: f32,
-    _diag: f32,
+    diag: f32,
 ) -> Vec<Stroke> {
     let mut out = Vec::new();
     let Ok(face) = Face::new(bytes, wght) else { return out };
+    let dface = (diag > 0.0).then(|| Face::new(bytes, diag).ok()).flatten();
     for ch in text.chars() {
-        let Ok(m) = mark(&face, &ch.to_string(), 0.0, true, thicken, None) else { continue };
+        let from = if crate::shape::DIAGONAL.contains(ch) {
+            dface.as_ref().unwrap_or(&face)
+        } else {
+            &face
+        };
+        let Ok(m) = mark(from, &ch.to_string(), 0.0, true, thicken, None) else { continue };
+        // scale_x FIRST. It lays a diagonal down, so measuring before it and
+        // multiplying after is only right for a stroke that is exactly vertical
+        // — which is the one case that needed no correction. Applying it to the
+        // geometry measures the letter that actually gets drawn.
+        let m = Mark {
+            glyphs: m.glyphs.iter()
+                .map(|(g, off)| (crate::outline::Glyph {
+                    contours: g.contours.iter()
+                        .map(|c| c.iter().map(|&(x, y)| (x * scale_x, y)).collect())
+                        .collect(),
+                    advance: g.advance * scale_x,
+                }, off * scale_x))
+                .collect(),
+            cap: m.cap,
+        };
         let Some((x0, y0, x1, y1)) = m.box2() else { continue };
         let cap = m.cap;
         let (w, h) = (x1 - x0, y1 - y0);
         if w <= 0.0 || h <= 0.0 {
             continue;
         }
-        // Sample across the middle of the letter, away from terminals where a
-        // stroke is cut at an angle and reads wider than the pen that drew it.
-        // A run wider than this much of the letter is a crossbar, not a stem.
-        let long = 0.55;
-        let mut stems = Vec::new();
-        for i in 1..12 {
-            let y = y0 + h * (0.28 + 0.44 * i as f32 / 12.0);
-            stems.extend(row(&m, y, x0, x1, cap).into_iter().filter(|r| r * cap < w * long));
-        }
-        let mut bars = Vec::new();
-        for i in 1..12 {
-            let x = x0 + w * (0.18 + 0.64 * i as f32 / 12.0);
-            let mut run = 0.0f32;
-            let n = 300;
-            for k in 0..n {
-                let y = y0 + h * (k as f32 + 0.5) / n as f32;
-                if m.glyphs.iter().any(|(g, off)| inside(g, x - off, y)) {
-                    run += h / n as f32;
-                } else if run > 0.0 {
-                    if run < h * long {
-                        bars.push(run / cap);
-                    }
-                    run = 0.0;
+        let (mut stems, mut bars) = (Vec::new(), Vec::new());
+        let n = 41;
+        for i in 1..n {
+            let y = y0 + h * i as f32 / n as f32;
+            for j in 1..n {
+                let x = x0 + w * j as f32 / n as f32;
+                if !m.glyphs.iter().any(|(g, off)| inside(g, x - off, y)) {
+                    continue;
+                }
+                let (pw, ang) = thinnest(&m, x, y);
+                if pw <= 0.0 {
+                    continue;
+                }
+                // The chord's own direction says which way the stroke runs: the
+                // thinnest chord crosses the stroke, so the stroke is at right
+                // angles to it. Near-horizontal chord -> upright stroke.
+                if ang.cos().abs() >= std::f32::consts::FRAC_1_SQRT_2 {
+                    stems.push(pw / cap)
+                } else {
+                    bars.push(pw / cap)
                 }
             }
-            if run > 0.0 && run < h * long {
-                bars.push(run / cap);
-            }
         }
-        // A diagonal letter has no horizontal bar, and a column through one
-        // returns the diagonal's RUN LENGTH rather than its pen width — 0.50 cap
-        // on V, 0.48 on M, which then set the alphabet's spread and hide what the
-        // real outliers are (the round-form bottoms of U, 3, 6, 9 at ~0.15).
-        let bar = if crate::shape::DIAGONAL.contains(ch) { 0.0 } else { median(&mut bars) };
-        out.push(Stroke { ch, stem: median(&mut stems) * scale_x, bar });
+        out.push(Stroke { ch, stem: median(&mut stems), bar: median(&mut bars) });
     }
     out
+}
+
+/// The stroke width at (x, y): the SHORTEST chord through the point, and the
+/// angle it lies at.
+///
+/// The shortest chord through an interior point crosses the stroke square-on, so
+/// its length is the pen width — for a stem, a bar, a diagonal or a curve alike,
+/// with no angle to know in advance and no per-letter special case.
+///
+/// Two wrong answers preceded this one, and both were wrong by a lot. Reading
+/// the HORIZONTAL chord gives w/sin(theta), which put X at 0.43 and Z at 0.56
+/// against a 0.30 stem. Combining the horizontal and vertical chords as
+/// 1/w^2 = 1/h^2 + 1/v^2 is exact only when BOTH cut across the stroke — on an
+/// upright stem the vertical chord runs ALONG it, so that formula was fed the
+/// stroke's LENGTH and returned 0.2841 for an L stem that measures 0.2977 flat
+/// at every height. Sampling the angle out is the fix: nothing has to be
+/// assumed about which way the stroke runs.
+fn thinnest(m: &Mark, x: f32, y: f32) -> (f32, f32) {
+    let Some((x0, y0, x1, y1)) = m.box2() else { return (0.0, 0.0) };
+    let reach = (x1 - x0).max(y1 - y0);
+    let step = reach / 700.0;
+    let hit = |px: f32, py: f32| m.glyphs.iter().any(|(g, off)| inside(g, px - off, py));
+    if !hit(x, y) {
+        return (0.0, 0.0);
+    }
+    // 24 directions is every 7.5 degrees, so the worst a straight stroke can be
+    // over-read is 1/cos(3.75 deg) — 0.2%, well under the differences at issue.
+    let k = 24;
+    let (mut best, mut at) = (f32::MAX, 0.0);
+    for i in 0..k {
+        let a = std::f32::consts::PI * i as f32 / k as f32;
+        let (dx, dy) = (a.cos(), a.sin());
+        let mut lo = 0.0;
+        while lo < reach && hit(x - dx * (lo + step), y - dy * (lo + step)) {
+            lo += step;
+        }
+        let mut hi = 0.0;
+        while hi < reach && hit(x + dx * (hi + step), y + dy * (hi + step)) {
+            hi += step;
+        }
+        let len = lo + hi;
+        if len < best {
+            best = len;
+            at = a;
+        }
+    }
+    (best, at)
 }

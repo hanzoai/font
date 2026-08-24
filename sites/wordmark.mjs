@@ -78,9 +78,27 @@ if (!existsSync(ZEN)) {
  * letters overlapping. A font X kerned to overlap crowds the U instead: the gap
  * came out 0.020 against the drawing's 0.102, five times too tight.
  */
+/* Stroke widths are the THINNEST CHORD through a point, measured the same way
+ * on the drawing and on the cut, which is what makes the two comparable:
+ *
+ *            drawn            cut
+ *   L stem   0.2957   0.2929   -0.9%
+ *   L bar    0.2643   0.2643    0.0%
+ *   X        0.2814   0.2827   +0.5%
+ *   U stem   0.3043   0.2933   -3.6%
+ *
+ * The X sets its own weight because the drawn X is 4.8% thinner than the drawn
+ * L, and Zen's is 9% thinner at one weight. diag 790 lands it at 0.5%.
+ *
+ * The U is the floor and it is a letterform, not a setting: the drawn U's
+ * stem/bar ratio is 1.170 against Zen's 1.104, and its counter closes to 0.16
+ * cap where Zen's holds 0.30. No weight reproduces a different ratio — giving
+ * the U its own heavier instance fixes the stem and pushes the bar out by as
+ * much, so the worst reading does not improve. Redrawing the glyph would.
+ */
 const LUX = {
-  wght: 650, scaleX: 1.4996, track: -0.095, flatten: 1, diag: 750,
-  thicken: 92, ux: 0.01917, foot: 27.96, lu: -0.00456,
+  wght: 650, scaleX: 1.4861, track: -0.095, flatten: 1, diag: 790,
+  thicken: 92, ux: 0.01949, foot: 32.59, lu: -0.00454,
 }
 
 const MARKS = [
