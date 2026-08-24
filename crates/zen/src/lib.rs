@@ -10,6 +10,8 @@
 //! with nothing swapped out, which is the whole reason it is not Python.
 
 pub mod fit;
+#[cfg(feature = "name")]
+pub mod instance;
 pub mod kern;
 pub mod lux;
 pub mod outline;
@@ -28,22 +30,12 @@ pub use shape::{flatten, mark, thicken, Mark};
 /// The presets, as data — GENERATED from `packages/zen/scripts/presets.mjs`, which
 /// is the one source. It was restated here by hand, so the CLI and the stylesheet
 /// could disagree about what `wide` is and nothing would say so.
-///
-/// `book` and `medium` were fitted against a licensed text face and `wide` against
-/// a licensed display one; `residual` records how close the winner got, because a
-/// preset that is a strong resemblance and a preset that is a match should not look
-/// the same in the source.
 #[derive(Clone, Copy, Debug)]
 pub struct Preset {
     pub name: &'static str,
     pub wght: f32,
     pub scale_x: f32,
     pub track: f32,
-    /// Coverage: whole-mark pixel difference as a fraction of target ink.
-    pub residual: Option<f32>,
-    /// The worst single feature — stem, bar — as a ratio to the target's.
-    /// Not comparable to `residual`; see the note in presets.mjs.
-    pub within: Option<f32>,
 }
 
 pub use presets::PRESETS;

@@ -1,24 +1,11 @@
-/* The Zen presets, defined once and emitted twice.
+/* The Zen presets, defined once and emitted four ways.
  *
- * Each is a point in Zen's own parameter space that a brand has settled on, so a
- * surface names the voice ("wide") rather than restating three numbers that then
- * drift between the stylesheet and the component.
+ * Each is a point in Zen's own parameter space that a surface has settled on, so
+ * it names the voice ("wide") rather than restating three numbers that then drift
+ * between the stylesheet and the component. The same five reach CSS, JS, the
+ * TypeScript types and the Rust crate from this file.
  *
- * The three that match something were FITTED, not chosen, and TWO DIFFERENT METRICS
- * are involved — which is why they are two different fields rather than one number
- * that means whichever thing you assumed:
- *
- *   residual   coverage. Render target and candidate at one cap height, take the
- *              pixel difference as a fraction of target ink. Whole-mark, so it is
- *              dominated by width and position.
- *   within     the worst single FEATURE — stem width, bar thickness — as a ratio to
- *              the target's. Coverage cannot see a thin bar behind a correct width,
- *              and on the LUX wordmark it scored 17% while the bars ran 21-29% thin.
- *
- * A 3.2% `within` and a 25.4% `residual` are not comparable and must not be read
- * as one being eight times better than the other.
- *
- * Run: node scripts/presets.mjs   (writes dist/presets.css and dist/presets.js)
+ * Run: node scripts/presets.mjs   (writes dist/presets.{css,js,d.ts} and crates/zen/src/presets.rs)
  */
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -29,41 +16,26 @@ const DIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 export const PRESETS = {
   air: {
     wght: 220, scaleX: 1, track: -0.03,
-    note: 'Thin display. Hanzo’s headline voice.',
+    note: 'Thin display. Set large, tracked in.',
   },
   book: {
     wght: 497, scaleX: 1, track: 0,
     note: 'Text. The reading weight.',
-    residual: 0.297,
   },
   medium: {
     wght: 606, scaleX: 1, track: 0,
     note: 'UI emphasis. A step up from book without becoming display.',
-    residual: 0.254,
   },
   wide: {
-    // The wordmark's own geometry, so caps set here sit with it rather than
-    // near it. It was 1.56 while the mark solved to 1.4861 — 5% apart, which is
-    // visible the moment the two meet.
-    //
-    // No diagonal weight, and that is measured rather than assumed. The mark
-    // gives its X its own heavier instance because one letter can be aimed at
-    // one target; doing the same across an alphabet makes it WORSE — evenness
-    // 1.90 -> 2.17. A heavier whole glyph thickens a letter's UPRIGHT too, so K
-    // goes +21%, and each letter's angle responds differently, so A, V and W
-    // overshoot by 7-9% while M and Y do not move at all.
-    //
-    // What remains is the face's own drawing: the uprights hold 0.293-0.295
-    // across BDEFHIJKLNPRTU, diagonals run about 13% under it, and the round
-    // forms 3-17% under at their thinnest point, which is how a round letter is
-    // drawn. Evenness 1.90, widest over narrowest.
+    // Widening is horizontal, so it reaches the uprights and leaves the
+    // horizontals where they were — which is why this carries a weight as well
+    // as a scale. Weight alone cannot widen; scale alone comes out light.
     wght: 650, scaleX: 1.4861, track: -0.095,
-    note: 'Monumental caps. Set to sit with the LUX wordmark.',
-    fits: 'the LUX wordmark', within: 0.026,
+    note: 'Monumental caps. Widened, and weighted to hold the widening.',
   },
   round: {
     wght: 900, scaleX: 1, track: -0.018,
-    note: 'Heavy and friendly at large sizes. Zoo’s display voice.',
+    note: 'Heavy and friendly at large sizes.',
   },
 }
 
@@ -74,19 +46,7 @@ export const PRESETS = {
 
    DIVIDE BY THE EM, NOT THE CAP, and that is the whole subtlety. `font-size` and
    `size-adjust` both scale the em, so matching x-heights means matching
-   x-per-em:
-
-     prior  xh 494 / upem 1000 = 0.4940
-     Zen    xh 530 / upem 1000 = 0.5300
-     factor = 0.4940 / 0.5300  = 0.9321
-
-   This shipped as 0.962 first, derived from the same two faces' x-per-CAP
-   (0.7180 / 0.7465). Those cap ratios are correct and the arithmetic on them is
-   correct — it just answers a question nobody asked, because no CSS property
-   scales a glyph by its cap height. The result was type still 3.2% larger than
-   what it replaced: better than the 6.8% of no correction at all, and close
-   enough to read as done while being wrong. Any surface that applied 0.962
-   should move to this value. */
+   x-per-em, and a ratio of cap heights answers a question no CSS property asks. */
 export const XHEIGHT_FACTOR = 0.9321
 
 const decl = (p) => {
@@ -99,18 +59,16 @@ const decl = (p) => {
 
 const css = `/* Zen presets — generated by scripts/presets.mjs. Do not edit.
  *
- *   import '@hanzo/font/css'        the faces
- *   import '@hanzo/font/presets'    these
+ *   import '@hanzo/font/css'          the faces
+ *   import '@hanzo/font/presets.css'  these
  *
- * A preset sets weight, and where the fit required it, tracking and a horizontal
+ * A preset sets weight, and where the voice needs it, tracking and a horizontal
  * scale. Anything that scales is inline-block with a left origin, and its LAYOUT
  * box stays the untransformed width — a transform does not reflow, so give
  * .zen-wide room or clip its container.
  */
 ${Object.entries(PRESETS).map(([k, p]) =>
-  `\n/* ${p.note}${p.residual ? ` (${(p.residual * 100).toFixed(1)}% coverage residual)` : ''}` +
-  `${p.within ? ` (within ${(p.within * 100).toFixed(1)}% on every feature)` : ''} */\n` +
-  `.zen-${k}{${decl(p)}}`).join('\n')}
+  `\n/* ${p.note} */\n.zen-${k}{${decl(p)}}`).join('\n')}
 
 :root{
 ${Object.entries(PRESETS).map(([k, p]) =>
@@ -145,11 +103,6 @@ const dts = `export interface ZenPreset {
   scaleX: number
   track: number
   note: string
-  fits?: string
-  /** Coverage: whole-mark pixel difference as a fraction of target ink. */
-  residual?: number
-  /** The worst single feature — stem, bar — as a ratio to the target's. */
-  within?: number
 }
 export declare const PRESETS: Record<'air' | 'book' | 'medium' | 'wide' | 'round', ZenPreset>
 export declare const XHEIGHT_FACTOR: number
@@ -173,9 +126,7 @@ ${Object.entries(PRESETS).map(([k, p]) =>
   // which is the whole failure this file exists to prevent. `f` keeps a whole
   // number a float, since Rust will not read `1` as f32.
   `    Preset { name: ${JSON.stringify(k)}, wght: ${f(p.wght)}, ` +
-  `scale_x: ${f(p.scaleX)}, track: ${f(p.track)}, ` +
-  `residual: ${p.residual ? `Some(${p.residual})` : 'None'}, ` +
-  `within: ${p.within ? `Some(${p.within})` : 'None'} },`).join('\n')}
+  `scale_x: ${f(p.scaleX)}, track: ${f(p.track)} },`).join('\n')}
 ];
 `
 writeFileSync(join(DIST, '..', '..', '..', 'crates', 'zen', 'src', 'presets.rs'), rs)
@@ -183,4 +134,4 @@ writeFileSync(join(DIST, '..', '..', '..', 'crates', 'zen', 'src', 'presets.rs')
 writeFileSync(join(DIST, 'presets.css'), css)
 writeFileSync(join(DIST, 'presets.js'), js)
 writeFileSync(join(DIST, 'presets.d.ts'), dts)
-console.log('wrote dist/presets.{css,js,d.ts} —', Object.keys(PRESETS).join(' '))
+console.log('wrote dist/presets.{css,js,d.ts} and crates/zen/src/presets.rs —', Object.keys(PRESETS).join(' '))

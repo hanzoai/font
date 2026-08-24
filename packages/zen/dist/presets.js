@@ -4,35 +4,31 @@ export const PRESETS = {
     "wght": 220,
     "scaleX": 1,
     "track": -0.03,
-    "note": "Thin display. Hanzo’s headline voice."
+    "note": "Thin display. Set large, tracked in."
   },
   "book": {
     "wght": 497,
     "scaleX": 1,
     "track": 0,
-    "note": "Text. The reading weight.",
-    "residual": 0.297
+    "note": "Text. The reading weight."
   },
   "medium": {
     "wght": 606,
     "scaleX": 1,
     "track": 0,
-    "note": "UI emphasis. A step up from book without becoming display.",
-    "residual": 0.254
+    "note": "UI emphasis. A step up from book without becoming display."
   },
   "wide": {
     "wght": 650,
     "scaleX": 1.4861,
     "track": -0.095,
-    "note": "Monumental caps. Set to sit with the LUX wordmark.",
-    "fits": "the LUX wordmark",
-    "within": 0.026
+    "note": "Monumental caps. Widened, and weighted to hold the widening."
   },
   "round": {
     "wght": 900,
     "scaleX": 1,
     "track": -0.018,
-    "note": "Heavy and friendly at large sizes. Zoo’s display voice."
+    "note": "Heavy and friendly at large sizes."
   }
 }
 export const XHEIGHT_FACTOR = 0.9321
