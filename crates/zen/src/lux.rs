@@ -29,26 +29,40 @@ const U_SPAN: (f32, f32) = (0.26, 0.62);  // the U, clear of both neighbours
 // mark whose two stems differ by half a point.
 const HI: f32 = 0.65;
 
-pub const NO_THICKEN: &str = "XVWAKZ/";
+
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Features {
     pub l_stem: f32,
     pub l_foot: f32,
+    pub l_arm: f32,
     pub u_stem: f32,
     pub u_bottom: f32,
+    pub x_stroke: f32,
     pub width: f32,
 }
 
 impl Features {
-    pub fn named(&self) -> [(&'static str, f32); 5] {
+    pub fn named(&self) -> [(&'static str, f32); 7] {
         [
             ("L stem", self.l_stem),
             ("L foot", self.l_foot),
+            ("L arm", self.l_arm),
             ("U stem", self.u_stem),
             ("U bottom", self.u_bottom),
+            ("X stroke", self.x_stroke),
             ("width", self.width),
         ]
+    }
+
+    /// How even the strokes are: widest over narrowest. 1.00 is monoline, which
+    /// is what the drawn mark nearly is and what "keep every stroke the same
+    /// width" asks for.
+    pub fn evenness(&self) -> f32 {
+        let s = [self.l_stem, self.l_foot, self.u_stem, self.u_bottom, self.x_stroke];
+        let lo = s.iter().cloned().fold(f32::MAX, f32::min);
+        let hi = s.iter().cloned().fold(f32::MIN, f32::max);
+        if lo > 0.0 { hi / lo } else { 9.9 }
     }
 }
 
@@ -101,37 +115,58 @@ pub fn features(m: &Mark, scale_x: f32) -> Features {
     let ls = row(m, hi, x0, x0 + w * L_SPAN, cap);
     let us = row(m, hi, at(U_SPAN.0), at(U_SPAN.1), cap);
 
+    // The L's arm, measured LOW where only the foot is present: its right end is
+    // where the bar stops, and "how close the bar reaches to the U" is exactly
+    // that number. Read as a fraction of total width so it is a proportion of the
+    // lockup, not a length that moves with scaleX.
+    let lo = cap * 0.10;
+    let arm = row(m, lo, x0, at(0.34), cap);
+    let l_arm = arm.first().copied().unwrap_or(0.0) / (w / cap);
+
+    // The X's diagonal, read BELOW the crossing where the two arms are separate.
+    // At mid height they merge into one run and the "stroke" measures the width
+    // of the crossing instead — a number that tracks the letter, not the pen.
+    let xs = row(m, cap * 0.22, at(0.62), x1, cap);
+    let x_stroke = if xs.is_empty() { 0.0 } else { xs.iter().sum::<f32>() / xs.len() as f32 };
+
     Features {
         l_stem: ls.first().copied().unwrap_or(0.0) * scale_x,
         l_foot: column(m, at(P_L_FOOT), cap),
+        l_arm,
         u_stem: us.first().copied().unwrap_or(0.0) * scale_x,
         u_bottom: column(m, at(P_U_MID), cap),
+        x_stroke: x_stroke * scale_x,
         width: w / cap * scale_x,
     }
 }
 
-/// The drawn LUX, measured once. Hard numbers rather than a re-read of the SVG:
-/// the artwork is 633 bytes of geometry in another repo, and a fit that silently
-/// changes when someone edits that file is worse than one that fails to compile.
-pub const DRAWN: Features = Features {
-    l_stem: 0.2967,
-    l_foot: 0.2667,
-    u_stem: 0.3033,
-    u_bottom: 0.2633,
-    width: 3.7067,
-};
+/// Measure the drawn mark from its own SVG.
+///
+/// These were five hardcoded floats with a comment defending the choice. The
+/// defence did not survive needing a sixth: deriving `x_stroke` by hand out of
+/// 633 bytes of path data is the step that quietly produces a wrong target, and
+/// a wrong target looks exactly like a bad fit. `svg.rs` costs seventy lines and
+/// makes every number here re-derivable from the artwork.
+pub fn drawn(src: &str, cap: f32) -> Option<Features> {
+    crate::svg::as_mark(src, cap).map(|m| features(&m, 1.0))
+}
 
-/// The bars carry the complaint, so they outweigh the stems. Width is not scored —
-/// `scale_x` satisfies it exactly by construction.
-const W_BAR: f32 = 1.4;
-const W_STEM: f32 = 1.0;
-
-fn deviation(got: &Features) -> f32 {
+/// What each feature is worth. The two bars and the X carry the complaint —
+/// "the bottom of the L", "the U", "the X is thinner than before" — and the arm
+/// is how far the bar reaches toward the U. Width is not scored: `scale_x`
+/// satisfies it exactly by construction.
+fn deviation(got: &Features, want: &Features) -> f32 {
     let d = |a: f32, b: f32, w: f32| if a <= 0.0 || b <= 0.0 { 9.9 } else { (a / b).ln().abs() * w };
-    d(got.l_foot, DRAWN.l_foot, W_BAR)
-        .max(d(got.u_bottom, DRAWN.u_bottom, W_BAR))
-        .max(d(got.l_stem, DRAWN.l_stem, W_STEM))
-        .max(d(got.u_stem, DRAWN.u_stem, W_STEM))
+    [
+        (got.l_foot, want.l_foot, 1.4),
+        (got.u_bottom, want.u_bottom, 1.4),
+        (got.x_stroke, want.x_stroke, 1.4),
+        (got.l_arm, want.l_arm, 1.2),
+        (got.l_stem, want.l_stem, 1.0),
+        (got.u_stem, want.u_stem, 1.0),
+    ]
+    .iter()
+    .fold(0.0f32, |acc, &(a, b, w)| acc.max(d(a, b, w)))
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -140,35 +175,144 @@ pub struct Cut {
     pub scale_x: f32,
     pub track: f32,
     pub thicken: f32,
+    pub diag: f32,
     pub deviation: f32,
     pub got: Features,
 }
 
-/// Search (wght, thicken) and SOLVE scale_x. Two nested loops, not three: the
-/// mark must land on the drawn width, and `scale_x` is the only control that
-/// changes width — so it is determined, never searched.
-pub fn fit(bytes: &[u8], track: f32) -> Option<Cut> {
+/// Search (wght, thicken, diag, track) and SOLVE scale_x, against a target read
+/// from `src`.
+///
+/// `scale_x` is never searched: the mark must land on the drawn width and it is
+/// the only control that changes width, so it is determined by the others.
+///
+/// Tracking IS searched, because it moves a feature nothing else reaches. The
+/// L's bar has to end near the U, and how near is the L-to-U gap; tightening it
+/// shrinks the raw width, `scale_x` grows to compensate, and the arm's share of
+/// the whole rises. Fixed at -0.04 the arm came out 7.6% short with no control
+/// able to answer for it.
+pub fn fit(bytes: &[u8], src: &str) -> Option<(Cut, Features)> {
+    let probe = Face::new(bytes, 700.0).ok()?;
+    let want = drawn(src, probe.cap)?;
+
     let mut best: Option<Cut> = None;
     for wi in 0..=14 {
-        let wght = 500.0 + wi as f32 * 25.0;
+        let wght = 475.0 + wi as f32 * 25.0;
         let face = Face::new(bytes, wght).ok()?;
-        for ti in 0..=16 {
+        for ti in 0..=18 {
             let thicken = ti as f32 * 6.0;
-            let m = mark(&face, "LUX", track, true, thicken, NO_THICKEN).ok()?;
-            let raw = features(&m, 1.0);
-            if raw.width <= 0.0 {
-                continue;
-            }
-            let scale_x = DRAWN.width / raw.width;
-            if !(0.9..=2.2).contains(&scale_x) {
-                continue;
-            }
-            let got = features(&m, scale_x);
-            let dev = deviation(&got);
-            if best.map_or(true, |b| dev < b.deviation) {
-                best = Some(Cut { wght, scale_x, track, thicken, deviation: dev, got });
+            for di in 0..=6 {
+                let diag = di as f32 * 0.2;
+                for tk in 0..=5 {
+                    let track = -0.02 - tk as f32 * 0.015;
+                    let m = mark(&face, "LUX", track, true, thicken, diag).ok()?;
+                    let raw = features(&m, 1.0);
+                    if raw.width <= 0.0 {
+                        continue;
+                    }
+                    let scale_x = want.width / raw.width;
+                    if !(0.9..=2.2).contains(&scale_x) {
+                        continue;
+                    }
+                    let got = features(&m, scale_x);
+                    let dev = deviation(&got, &want);
+                    if best.map_or(true, |b: Cut| dev < b.deviation) {
+                        best = Some(Cut { wght, scale_x, track, thicken, diag, deviation: dev, got });
+                    }
+                }
             }
         }
     }
-    best
+    best.map(|c| (c, want))
+}
+
+/// Stroke widths for a whole alphabet at one cut, so a shaping fitted to three
+/// letters can be checked against the twenty-three it did not see.
+///
+/// `zen-wide` sets words, not just the wordmark — LUX CREDIT, SOVEREIGN — so a
+/// `thicken` that makes LUX monoline and leaves E or S lumpy has moved the
+/// problem rather than solved it. Two numbers per letter, both in cap units:
+///
+///   stem   the median horizontal ink run across the middle band
+///   bar    the median vertical ink run down the letter
+///
+/// Median, not mean: a counter splits a row into several runs and an O's two
+/// sides are the same stroke twice, while the mean is dragged by whichever
+/// crossing is widest.
+///
+/// A STROKE IS THE SHORT DIMENSION, and the filter that enforces it is the whole
+/// difference between a measurement and a number. Without it, E's crossbar is a
+/// horizontal run spanning the letter and reads as a 1.02-cap "stem"; I is solid
+/// down every column and reads as a 1.00-cap "bar"; A, M, V and W report their
+/// diagonals as half-cap bars. The alphabet then scores 7.5 on a spread where the
+/// real answer is near 1, and the number says nothing about the type.
+pub struct Stroke {
+    pub ch: char,
+    pub stem: f32,
+    pub bar: f32,
+}
+
+fn median(v: &mut Vec<f32>) -> f32 {
+    if v.is_empty() {
+        return 0.0;
+    }
+    v.sort_by(|a, b| a.partial_cmp(b).unwrap_or(core::cmp::Ordering::Equal));
+    v[v.len() / 2]
+}
+
+pub fn strokes(
+    bytes: &[u8],
+    text: &str,
+    wght: f32,
+    scale_x: f32,
+    thicken: f32,
+    diag: f32,
+) -> Vec<Stroke> {
+    let mut out = Vec::new();
+    let Ok(face) = Face::new(bytes, wght) else { return out };
+    for ch in text.chars() {
+        let Ok(m) = mark(&face, &ch.to_string(), 0.0, true, thicken, diag) else { continue };
+        let Some((x0, y0, x1, y1)) = m.box2() else { continue };
+        let cap = m.cap;
+        let (w, h) = (x1 - x0, y1 - y0);
+        if w <= 0.0 || h <= 0.0 {
+            continue;
+        }
+        // Sample across the middle of the letter, away from terminals where a
+        // stroke is cut at an angle and reads wider than the pen that drew it.
+        // A run wider than this much of the letter is a crossbar, not a stem.
+        let long = 0.55;
+        let mut stems = Vec::new();
+        for i in 1..12 {
+            let y = y0 + h * (0.28 + 0.44 * i as f32 / 12.0);
+            stems.extend(row(&m, y, x0, x1, cap).into_iter().filter(|r| r * cap < w * long));
+        }
+        let mut bars = Vec::new();
+        for i in 1..12 {
+            let x = x0 + w * (0.18 + 0.64 * i as f32 / 12.0);
+            let mut run = 0.0f32;
+            let n = 300;
+            for k in 0..n {
+                let y = y0 + h * (k as f32 + 0.5) / n as f32;
+                if m.glyphs.iter().any(|(g, off)| inside(g, x - off, y)) {
+                    run += h / n as f32;
+                } else if run > 0.0 {
+                    if run < h * long {
+                        bars.push(run / cap);
+                    }
+                    run = 0.0;
+                }
+            }
+            if run > 0.0 && run < h * long {
+                bars.push(run / cap);
+            }
+        }
+        // A diagonal letter has no horizontal bar, and a column through one
+        // returns the diagonal's RUN LENGTH rather than its pen width — 0.50 cap
+        // on V, 0.48 on M, which then set the alphabet's spread and hide what the
+        // real outliers are (the round-form bottoms of U, 3, 6, 9 at ~0.15).
+        let bar = if crate::shape::DIAGONAL.contains(ch) { 0.0 } else { median(&mut bars) };
+        out.push(Stroke { ch, stem: median(&mut stems) * scale_x, bar });
+    }
+    out
 }

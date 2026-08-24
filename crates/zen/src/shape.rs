@@ -110,23 +110,31 @@ pub struct Mark {
 
 /// Cut `text` from a face and apply the shaping.
 ///
-/// `no_thicken` names the characters the bar treatment must skip. A DIAGONAL has
-/// a horizontal tangent component too, so it thickens by d/|slope| rather than d
-/// — on LUX that would overshoot an X stroke already within 3% of the drawn mark.
+/// `d` is the bar amount; `diag` scales it for diagonal letters (see DIAGONAL).
+/// Letters built from diagonals rather than stems and bars.
+///
+/// A diagonal at angle θ to the horizontal gains `d·cot θ` in its horizontal
+/// measurement, not `d`, so one amount cannot serve both. Feeding the X the
+/// bars' `d` overshot its stroke by 6.3%; excluding it entirely — the version
+/// before that — left it THINNER than the unshaped cut once the fit dropped the
+/// weight to thin the stems. `diag` scales `d` for these, and is searched.
+pub const DIAGONAL: &str = "XVWAKZxvwy/";
+
 pub fn mark(
     face: &crate::outline::Face,
     text: &str,
     track: f32,
     flat: bool,
     d: f32,
-    no_thicken: &str,
+    diag: f32,
 ) -> Result<Mark, String> {
     let mut glyphs = Vec::new();
     let mut pen = 0.0_f32;
     for ch in text.chars() {
         let g = face.glyph(ch).ok_or_else(|| format!("no glyph for {ch:?}"))?;
         let adv = g.advance;
-        let g = if d > 0.0 && !no_thicken.contains(ch) { thicken(&g, d) } else { g };
+        let amount = if DIAGONAL.contains(ch) { d * diag } else { d };
+        let g = if amount > 0.0 { thicken(&g, amount) } else { g };
         // AFTER thickening, never before: raising a bar also raises the top of the
         // letter, and this is what puts it back on the cap line.
         let g = if flat { flatten(&g, 0.0, face.cap) } else { g };
