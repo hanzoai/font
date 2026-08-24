@@ -5,6 +5,6 @@ pub const PRESETS: [Preset; 5] = [
     Preset { name: "air", wght: 220.0, scale_x: 1.00, track: -0.030, residual: None, within: None },
     Preset { name: "book", wght: 497.0, scale_x: 1.00, track: 0.000, residual: Some(0.297), within: None },
     Preset { name: "medium", wght: 606.0, scale_x: 1.00, track: 0.000, residual: Some(0.254), within: None },
-    Preset { name: "wide", wght: 625.0, scale_x: 1.55, track: -0.080, residual: None, within: Some(0.038) },
+    Preset { name: "wide", wght: 625.0, scale_x: 1.58, track: -0.095, residual: None, within: Some(0.038) },
     Preset { name: "round", wght: 900.0, scale_x: 1.00, track: -0.018, residual: None, within: None },
 ];

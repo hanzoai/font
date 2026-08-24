@@ -19,7 +19,7 @@
 .zen-medium{font-variation-settings:'wght' 606}
 
 /* Monumental caps. Set to sit with the LUX wordmark. (within 3.8% on every feature) */
-.zen-wide{font-variation-settings:'wght' 625;letter-spacing:-0.08em;transform:scaleX(1.55);transform-origin:left center;display:inline-block}
+.zen-wide{font-variation-settings:'wght' 625;letter-spacing:-0.095em;transform:scaleX(1.58);transform-origin:left center;display:inline-block}
 
 /* Heavy and friendly at large sizes. Zoo’s display voice. */
 .zen-round{font-variation-settings:'wght' 900;letter-spacing:-0.018em}
@@ -28,7 +28,7 @@
   --zen-air-wght:220;--zen-air-track:-0.03em;
   --zen-book-wght:497;
   --zen-medium-wght:606;
-  --zen-wide-wght:625;--zen-wide-track:-0.08em;--zen-wide-scale-x:1.55;
+  --zen-wide-wght:625;--zen-wide-track:-0.095em;--zen-wide-scale-x:1.58;
   --zen-round-wght:900;--zen-round-track:-0.018em;
   --zen-basel-xheight-factor:0.9321;
 }

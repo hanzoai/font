@@ -187,9 +187,28 @@ pub fn mark(
     d: f32,
     diag_face: Option<&crate::outline::Face>,
 ) -> Result<Mark, String> {
+    mark_kerned(face, text, track, flat, d, diag_face, &[])
+}
+
+/// As `mark`, plus per-pair kerns in em fractions.
+///
+/// Uniform tracking cannot make one pair tighter than the rest, and the drawn LUX
+/// needs exactly that: its X starts BEFORE its U ends — they overlap in x, the X
+/// tucked under the U's right shoulder. No letter-spacing produces an overlap, so
+/// without a pair kern the X sits too far right no matter what else is fitted.
+pub fn mark_kerned(
+    face: &crate::outline::Face,
+    text: &str,
+    track: f32,
+    flat: bool,
+    d: f32,
+    diag_face: Option<&crate::outline::Face>,
+    kerns: &[(char, char, f32)],
+) -> Result<Mark, String> {
     let mut glyphs = Vec::new();
     let mut pen = 0.0_f32;
-    for ch in text.chars() {
+    let chars: Vec<char> = text.chars().collect();
+    for (i, &ch) in chars.iter().enumerate() {
         let diagonal = DIAGONAL.contains(ch);
         // A diagonal is cut from its own instance and left alone. The advance
         // comes from the SAME instance it was drawn at, or the run would space
@@ -202,7 +221,10 @@ pub fn mark(
         // letter, and this is what puts it back on the cap line.
         let g = if flat { flatten(&g, 0.0, face.cap) } else { g };
         glyphs.push((g, pen));
-        pen += adv + track * face.upem;
+        let pair = chars.get(i + 1).and_then(|&next| {
+            kerns.iter().find(|(a, b, _)| *a == ch && *b == next).map(|(_, _, k)| *k)
+        });
+        pen += adv + (track + pair.unwrap_or(0.0)) * face.upem;
     }
     Ok(Mark { glyphs, cap: face.cap })
 }
