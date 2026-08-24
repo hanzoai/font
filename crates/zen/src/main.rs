@@ -129,8 +129,22 @@ fn main() {
             let dface = (dw > 0.0).then(|| Face::new(&bytes, dw).unwrap_or_else(|e| die(&e)));
             // arg 10: a UX kern in em, negative to tuck the X under the U
             let ux: f32 = a.get(10).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            // arg 11: how much longer the L's foot is than the font draws it,
+            // in font units. The drawn mark runs the foot up to the U; scale_x
+            // cannot say that, because it moves the U by the same amount.
+            let lw: f32 = a.get(11).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            // arg 12: the L-U kern. Stretching the L scales its advance with it,
+            // so the sidebearing grows too and the foot never reaches the bowl.
+            // Width and spacing are two facts about the mark and take two knobs.
+            let lu: f32 = a.get(12).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            // arg 13: how many leading letters are the MARK rather than a word
+            // set beside it. Only the mark takes the bar amount. Default: all.
+            let head: usize = a.get(13).and_then(|s| s.parse().ok())
+                .unwrap_or_else(|| a[2].chars().count());
             let m = zen::shape::mark_kerned(&face, &a[2], n(5), a[6] == "1", n(7),
-                                            dface.as_ref(), &[('U', 'X', ux)])
+                                            dface.as_ref(),
+                                            &[('U', 'X', ux), ('L', 'U', lu)], &[('L', lw)],
+                                            head)
                 .unwrap_or_else(|e| die(&e));
             // simplify tolerance, in font units. Optional so a suspected
             // simplify artefact can be ruled in or out without a rebuild.
@@ -154,8 +168,11 @@ fn main() {
             let dw = n(6);
             let dface = (dw > 0.0).then(|| Face::new(&bytes, dw).unwrap_or_else(|e| die(&e)));
             let ux: f32 = a.get(7).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let lw: f32 = a.get(9).and_then(|s| s.parse().ok()).unwrap_or(0.0);
+            let lu: f32 = a.get(10).and_then(|s| s.parse().ok()).unwrap_or(0.0);
             let m = zen::shape::mark_kerned(&face, "LUX", n(4), true, n(5),
-                                            dface.as_ref(), &[('U', 'X', ux)])
+                                            dface.as_ref(),
+                                            &[('U', 'X', ux), ('L', 'U', lu)], &[('L', lw)], 3)
                 .unwrap_or_else(|e| die(&e));
             let got = zen::lux::features(&m, n(3));
             out(&format!("{:<10}{:>9}{:>9}{:>9}\n", "feature", "drawn", "zen", "off"));
