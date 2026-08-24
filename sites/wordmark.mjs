@@ -58,21 +58,33 @@ if (!existsSync(ZEN)) {
  *          optical adjustment. Caps would need the Z kerned against two round
  *          forms; lowercase needs nothing.
  */
-const LUX = { wght: 650, scaleX: 1.556, track: -0.095, flatten: 1, diag: 750, ux: -0.02 }
+const LUX = {
+  wght: 650, scaleX: 1.5503, track: -0.095, flatten: 1, diag: 750,
+  ux: -0.02, thicken: 90,
+  // The drawn mark is a 63x17 grid: the L is 0-18 and the U starts AT 18, so
+  // the foot runs right up to the bowl. The cut left a gap there and a 2.1%
+  // short L while the mark's TOTAL width was already right, which no scaleX can
+  // fix — it moves all three letters together. `foot` lengthens the L's arm
+  // without touching its stem; `lu` closes the remaining gap.
+  foot: 10.13, lu: -0.00494,
+}
 
 const MARKS = [
-  { name: 'lux', text: 'LUX', ...LUX, thicken: 90 },
-  { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.000, track: -0.0286, flatten: 0, thicken: 0, diag: 0, ux: 0 },
-  { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.000, track: -0.025,  flatten: 0, thicken: 0, diag: 0, ux: 0 },
+  { name: 'lux', text: 'LUX', ...LUX, head: 3 },
+  { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.000, track: -0.0286, flatten: 0, thicken: 0, diag: 0, ux: 0, foot: 0, lu: 0, head: 0 },
+  { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.000, track: -0.025,  flatten: 0, thicken: 0, diag: 0, ux: 0, foot: 0, lu: 0, head: 0 },
 
-  // The Lux family. Same voice as the mark and the same U-X tuck, thicken 0 —
-  // see above. Every surface that puts a word after LUX takes its lockup from
-  // here rather than setting it locally, which is the only way LUX means the
-  // same thing on twelve properties.
+  // The Lux family: the MARK, then a word beside it. `head` is where the mark
+  // ends. Only the mark takes the bar amount — thicken steps any terminal that
+  // is not flat, so LUX takes it cleanly while a C, S, G or R notches. Measured
+  // on "LUX CREDIT" at d=90: the LUX comes out right and the C's terminals and
+  // the R's bowl visibly break. So the LUX here is the same LUX as the mark,
+  // letter for letter, and the word beside it is the clean cut.
   ...['LUX CREDIT', 'LUX FINANCE', 'LUX BANK', 'LUX FUND', 'LUX EXCHANGE',
       'LUX LINK', 'LUX DAO', 'LUX MARKET', 'LUX TRADER', 'LUX PRO',
       'LUX AI', 'LUX CHAT', 'LX'].map((text) => ({
-    name: text.toLowerCase().replace(/ /g, '-'), text, ...LUX, thicken: 0,
+    name: text.toLowerCase().replace(/ /g, '-'), text, ...LUX,
+    head: text.startsWith('LUX') ? 3 : 2,
   })),
 ]
 
@@ -80,7 +92,8 @@ mkdirSync(OUT, { recursive: true })
 for (const m of MARKS) {
   const svg = execFileSync(ZEN, ['mark', FONT, m.text,
     String(m.wght), String(m.scaleX), String(m.track), String(m.flatten),
-    String(m.thicken), String(m.diag), '1.0', String(m.ux ?? 0)],
+    String(m.thicken), String(m.diag), '1.0', String(m.ux ?? 0),
+    String(m.foot ?? 0), String(m.lu ?? 0), String(m.head ?? 0)],
     { encoding: 'utf8', maxBuffer: 8 << 20 })
   writeFileSync(join(OUT, `${m.name}.svg`), svg)
   console.log(`  ${m.name.padEnd(6)} ${m.text.padEnd(6)} wght ${m.wght} · ${m.scaleX}× · ` +

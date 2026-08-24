@@ -178,6 +178,61 @@ pub fn thicken(g: &Glyph, d: f32) -> Glyph {
     Glyph { contours, advance: g.advance }
 }
 
+/// Lengthen ONE letter's FOOT, leaving its stem exactly as drawn.
+///
+/// `scale_x` moves every letter together, which is the wrong instrument when a
+/// drawn mark's letters are not in the font's proportion to each other. The
+/// drawn LUX ends its L exactly where its U starts — the foot runs right up to
+/// the bowl — while the mark's TOTAL width is already right, so widening
+/// globally could only trade the error somewhere else.
+///
+/// Scaling the L in x is the wrong instrument too, and measurably: it widens the
+/// stem by the same factor as the foot, which took the L's stem from 3.8% heavy
+/// to 5.7% while fixing the arm. A stem and an arm are different strokes and
+/// only one of them is short.
+///
+/// So: shift everything to the RIGHT of the letter's extent AT THE CAP LINE. On
+/// an L that extent is the stem, so the foot moves and the stem does not. On a
+/// letter as wide at the top as at the bottom — U, H, X — nothing is to the
+/// right of it and this is identity, which is the correct answer for them.
+///
+/// Exact only where the outline crosses that threshold on horizontal segments,
+/// which is true of a straight-sided L and is why this is a mark-fitting tool
+/// and not a general transform.
+pub fn extend(g: &Glyph, cap: f32, dx: f32) -> Glyph {
+    if dx == 0.0 {
+        return Glyph { contours: g.contours.clone(), advance: g.advance };
+    }
+    // The letter's right edge at the cap line, found a hair below it so a flat
+    // top registers rather than being missed between two vertices.
+    let y = cap * 0.98;
+    let mut top = f32::MIN;
+    for c in &g.contours {
+        let n = c.len();
+        for i in 0..n {
+            let (a, b) = (c[i], c[(i + 1) % n]);
+            if (a.1 <= y && y < b.1) || (b.1 <= y && y < a.1) {
+                top = top.max(a.0 + (y - a.1) * (b.0 - a.0) / (b.1 - a.1));
+            }
+        }
+    }
+    if top == f32::MIN {
+        return Glyph { contours: g.contours.clone(), advance: g.advance };
+    }
+    Glyph {
+        contours: g
+            .contours
+            .iter()
+            .map(|c| {
+                c.iter()
+                    .map(|&(x, y)| if x > top + 1.0 { (x + dx, y) } else { (x, y) })
+                    .collect()
+            })
+            .collect(),
+        advance: g.advance + dx,
+    }
+}
+
 /// One shaped, positioned run of glyphs.
 pub struct Mark {
     pub glyphs: Vec<(Glyph, f32)>,
@@ -209,7 +264,7 @@ pub fn mark(
     d: f32,
     diag_face: Option<&crate::outline::Face>,
 ) -> Result<Mark, String> {
-    mark_kerned(face, text, track, flat, d, diag_face, &[])
+    mark_kerned(face, text, track, flat, d, diag_face, &[], &[], text.chars().count())
 }
 
 /// As `mark`, plus per-pair kerns in em fractions.
@@ -226,6 +281,8 @@ pub fn mark_kerned(
     d: f32,
     diag_face: Option<&crate::outline::Face>,
     kerns: &[(char, char, f32)],
+    wide: &[(char, f32)],
+    head: usize,
 ) -> Result<Mark, String> {
     let mut glyphs = Vec::new();
     let mut pen = 0.0_f32;
@@ -237,8 +294,24 @@ pub fn mark_kerned(
         // one letter by another letter's metrics.
         let from = if diagonal { diag_face.unwrap_or(face) } else { face };
         let g = from.glyph(ch).ok_or_else(|| format!("no glyph for {ch:?}"))?;
+        // Before the advance is read, so the letters after it close up behind
+        // the new width instead of leaving the gap this exists to remove.
+        let g = match wide.iter().find(|(c, _)| *c == ch) {
+            Some(&(_, dx)) if dx != 0.0 => extend(&g, face.cap, dx),
+            _ => g,
+        };
         let adv = g.advance;
-        let g = if !diagonal && d > 0.0 && takes_thicken(&g, d) { thicken(&g, d) } else { g };
+        // `head` is how many leading letters are the MARK. Past it the letters
+        // are a word set beside the mark, and they do not take the bar amount:
+        // thicken steps a terminal that is not flat, so LUX takes it cleanly
+        // while the C, S, G and R of a word beside it notch. Blanket-thickening
+        // "LUX CREDIT" fixes the LUX and visibly breaks the C and the R's bowl.
+        let mark = i < head;
+        let g = if mark && !diagonal && d > 0.0 && takes_thicken(&g, d) {
+            thicken(&g, d)
+        } else {
+            g
+        };
         // AFTER thickening, never before: raising a bar also raises the top of the
         // letter, and this is what puts it back on the cap line.
         let g = if flat { flatten(&g, 0.0, face.cap) } else { g };
