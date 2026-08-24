@@ -15,6 +15,13 @@
  * scripts, `_outline.py` for the plain cut and `_shape.py` for the shaped one —
  * the same job twice, and only one of them could produce the Lux mark.
  *
+ * THE MARK IS THICKENED; A LOCKUP IS NOT. `thicken` is exact on a horizontal bar
+ * and steps a terminal that is not flat, so LUX takes it cleanly — L, U and X
+ * terminate flat — while C, G, S and A notch. "LUX CREDIT" and its siblings are
+ * set at the same weight, width and tracking with `thicken: 0`; their bars run a
+ * little lighter than the mark's, which is the ordinary relationship between a
+ * logotype and the words beside it.
+ *
  * Run: node sites/wordmark.mjs   ->  sites/dist/wordmark/*.svg
  */
 import { execFileSync } from 'node:child_process'
@@ -47,9 +54,15 @@ if (!existsSync(ZEN)) {
  *          forms; lowercase needs nothing.
  */
 const MARKS = [
-  { name: 'lux',   text: 'LUX',   wght: 625, scaleX: 1.545, track: -0.080, flatten: 1, thicken: 78, diag: 0.6 },
+  { name: 'lux',   text: 'LUX',   wght: 625, scaleX: 1.540, track: -0.095, flatten: 1, thicken: 78, diag: 750 },
   { name: 'hanzo', text: 'Hanzo', wght: 600, scaleX: 1.000, track: -0.0286, flatten: 0, thicken: 0, diag: 0 },
   { name: 'zoo',   text: 'zoo',   wght: 800, scaleX: 1.000, track: -0.025, flatten: 0, thicken: 0, diag: 0 },
+
+  // The Lux family lockups. Same voice as the mark, no thicken — see above.
+  ...['LUX CREDIT', 'LUX FINANCE', 'LUX BANK', 'LUX FUND', 'LUX EXCHANGE'].map((text) => ({
+    name: text.toLowerCase().replace(/ /g, '-'), text,
+    wght: 625, scaleX: 1.540, track: -0.095, flatten: 1, thicken: 0, diag: 750,
+  })),
 ]
 
 mkdirSync(OUT, { recursive: true })

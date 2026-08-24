@@ -94,12 +94,13 @@ fn area(c: &[(f32, f32)]) -> f32 {
 /// [y, y+t+d]; a vertical stem's edges are at the same x in both, so its width
 /// and the advance do not move.
 ///
-/// OUTER contours and COUNTERS are handled differently. Under nonzero winding two
-/// overlapping outers already read as their union, so the outer half is free.
-/// Duplicating a COUNTER is not: the shifted hole would punch ink out of the
-/// original shape. The union's hole is `H ∩ (H + d)` — the part surviving in both
-/// copies — which for a counter that does not double back is the counter with its
-/// floor raised by d. A clamp, no boolean.
+/// EVERY contour is duplicated, counters included, and the winding does the rest.
+/// Special-casing counters is the intuitive move and it is wrong: duplicating the
+/// outer takes its winding to ±2, so a single counter at ∓1 no longer cancels it
+/// and the hole FILLS. B, D and R went solid. Two copies of the counter give ∓2,
+/// which cancels inside `H ∩ (H+d)` — exactly the union's hole — and leaves +1 in
+/// the sliver that is ink in one copy and hole in the other, which is also right.
+/// The arithmetic gives the intersection for free; reaching for a clamp broke it.
 ///
 /// WHAT THIS OPERATION IS FOR, and what it is not:
 ///
@@ -113,26 +114,44 @@ fn area(c: &[(f32, f32)]) -> f32 {
 /// 2, 3, 5 and 9 all step at their terminals. Counters were the first suspect and
 /// were a real bug, fixed above — but fixing them changed nothing, because the
 /// defect was never the holes. Do not reach for this to even out running text.
-pub fn thicken(g: &Glyph, d: f32) -> Glyph {
-    if d <= 0.0 {
-        return Glyph { contours: g.contours.clone(), advance: g.advance };
-    }
+/// Can this glyph take `thicken` without damage?
+///
+/// A COUNTER is the disqualifier. Raising its floor by d is the correct union,
+/// and it is still wrong past the point where d approaches the counter's height:
+/// the hole closes and the letter becomes a blob. B, D and R go solid at the
+/// amount the LUX mark uses, and A and G lose their apertures.
+///
+/// The check is the letter's own geometry, not a list of characters — a list is a
+/// promise about an alphabet, and this has to hold for whatever anyone sets.
+pub fn takes_thicken(g: &Glyph, d: f32) -> bool {
     let areas: Vec<f32> = g.contours.iter().map(|c| area(c)).collect();
-    let outer_sign = {
-        let pos: f32 = areas.iter().filter(|a| **a > 0.0).sum();
-        let neg: f32 = areas.iter().filter(|a| **a < 0.0).map(|a| -a).sum();
-        if pos >= neg { 1.0 } else { -1.0 }
-    };
-
-    let mut contours = Vec::with_capacity(g.contours.len() * 2);
-    for (c, a) in g.contours.iter().zip(&areas) {
-        if a * outer_sign > 0.0 {
-            contours.push(c.clone());
-            contours.push(c.iter().map(|&(x, y)| (x, y + d)).collect());
-        } else {
-            let floor = c.iter().fold(f32::MAX, |m, p| m.min(p.1)) + d;
-            contours.push(c.iter().map(|&(x, y)| (x, y.max(floor))).collect());
+    let sign = outer_sign(&areas);
+    g.contours.iter().zip(&areas).all(|(c, a)| {
+        if a * sign > 0.0 {
+            return true;
         }
+        let lo = c.iter().fold(f32::MAX, |m, p| m.min(p.1));
+        let hi = c.iter().fold(f32::MIN, |m, p| m.max(p.1));
+        // Leave the counter at least half its height. Below that it reads as a
+        // slot rather than a hole and the letter has stopped being itself.
+        d < (hi - lo) * 0.5
+    })
+}
+
+fn outer_sign(areas: &[f32]) -> f32 {
+    let pos: f32 = areas.iter().filter(|a| **a > 0.0).sum();
+    let neg: f32 = areas.iter().filter(|a| **a < 0.0).map(|a| -a).sum();
+    if pos >= neg { 1.0 } else { -1.0 }
+}
+
+pub fn thicken(g: &Glyph, d: f32) -> Glyph {
+    let mut contours = g.contours.clone();
+    if d > 0.0 {
+        contours.extend(
+            g.contours
+                .iter()
+                .map(|c| c.iter().map(|&(x, y)| (x, y + d)).collect()),
+        );
     }
     Glyph { contours, advance: g.advance }
 }
@@ -145,14 +164,19 @@ pub struct Mark {
 
 /// Cut `text` from a face and apply the shaping.
 ///
-/// `d` is the bar amount; `diag` scales it for diagonal letters (see DIAGONAL).
+/// `d` is the bar amount. `diag_face` is the instance diagonal letters are cut
+/// from — they are never thickened (see DIAGONAL).
 /// Letters built from diagonals rather than stems and bars.
 ///
-/// A diagonal at angle θ to the horizontal gains `d·cot θ` in its horizontal
-/// measurement, not `d`, so one amount cannot serve both. Feeding the X the
-/// bars' `d` overshot its stroke by 6.3%; excluding it entirely — the version
-/// before that — left it THINNER than the unshaped cut once the fit dropped the
-/// weight to thin the stems. `diag` scales `d` for these, and is searched.
+/// These are never thickened. `thicken` is exact on a horizontal bar and STEPS a
+/// terminal that is not flat, and a diagonal's terminals are cut across the
+/// stroke — so every amount that helped the X's weight also left a tab on its
+/// feet. Scaling the amount down (`diag`) made the step smaller and never zero,
+/// which is the shape of a workaround rather than a fix.
+///
+/// They get their own WEIGHT instead. A heavier instance of the X has the
+/// perpendicular stroke the mark wants and terminals the font drew, because
+/// nothing reshaped them.
 pub const DIAGONAL: &str = "XVWAKZxvwy/";
 
 pub fn mark(
@@ -161,15 +185,19 @@ pub fn mark(
     track: f32,
     flat: bool,
     d: f32,
-    diag: f32,
+    diag_face: Option<&crate::outline::Face>,
 ) -> Result<Mark, String> {
     let mut glyphs = Vec::new();
     let mut pen = 0.0_f32;
     for ch in text.chars() {
-        let g = face.glyph(ch).ok_or_else(|| format!("no glyph for {ch:?}"))?;
+        let diagonal = DIAGONAL.contains(ch);
+        // A diagonal is cut from its own instance and left alone. The advance
+        // comes from the SAME instance it was drawn at, or the run would space
+        // one letter by another letter's metrics.
+        let from = if diagonal { diag_face.unwrap_or(face) } else { face };
+        let g = from.glyph(ch).ok_or_else(|| format!("no glyph for {ch:?}"))?;
         let adv = g.advance;
-        let amount = if DIAGONAL.contains(ch) { d * diag } else { d };
-        let g = if amount > 0.0 { thicken(&g, amount) } else { g };
+        let g = if !diagonal && d > 0.0 && takes_thicken(&g, d) { thicken(&g, d) } else { g };
         // AFTER thickening, never before: raising a bar also raises the top of the
         // letter, and this is what puts it back on the cap line.
         let g = if flat { flatten(&g, 0.0, face.cap) } else { g };
