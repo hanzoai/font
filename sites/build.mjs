@@ -17,7 +17,7 @@
  *
  * Run: node sites/build.mjs   ->  sites/dist/<brand>/
  */
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync, readdirSync, statSync, existsSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PRESETS } from '../packages/zen/dist/presets.js'
@@ -31,6 +31,71 @@ const b64 = (p) => readFileSync(p).toString('base64')
 const FILE = { sans: ['zen-sans', 'Zen'], mono: ['zen-mono', 'ZenMono'], pixel: ['zen-pixel', 'ZenPixel'] }
 const FACE = Object.fromEntries(Object.entries(FILE).map(
   ([k, [dir, stem]]) => [k, b64(join(FONTS, dir, `${stem}-Variable.woff2`))]))
+const ITALIC = {
+  sans: b64(join(FONTS, 'zen-sans', 'Zen-Italic-Variable.woff2')),
+  mono: b64(join(FONTS, 'zen-mono', 'ZenMono-Italic-Variable.woff2')),
+}
+
+/* The stylesheet a page can link to instead of installing anything.
+   The faces are inlined, which is not a size trick — a cross-origin font file
+   needs CORS and a second round trip, and a data URI needs neither. One
+   request, from any origin.
+
+   FOUR faces: sans and mono, each roman and italic. That is what sets text, and
+   it is what the role variables promise — an <em> with no italic file gets a
+   slanted copy of the roman, which is a visible loss. Pixel is a display face
+   somebody chooses on purpose, so it is a file rather than a tax on every page
+   that wanted body copy. It carries the presets too, so the link is the whole
+   thing rather than the faces and a second thing to remember. */
+const sheet = () => `/* Zen. Generated; do not edit.
+ *
+ *   <link rel="stylesheet" href="https://HOST/zen.css">
+ *
+ * Then name the role: var(--font-sans), var(--font-mono), var(--font-pixel).
+ */
+@font-face{font-family:'Zen';src:url(data:font/woff2;base64,${FACE.sans}) format('woff2');
+  font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Zen';src:url(data:font/woff2;base64,${ITALIC.sans}) format('woff2');
+  font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:'Zen Mono';src:url(data:font/woff2;base64,${FACE.mono}) format('woff2');
+  font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Zen Mono';src:url(data:font/woff2;base64,${ITALIC.mono}) format('woff2');
+  font-weight:100 900;font-style:italic;font-display:swap}
+:root{
+  --font-sans:'Zen',ui-sans-serif,system-ui,sans-serif;
+  --font-mono:'Zen Mono',ui-monospace,monospace;
+  --font-pixel:'Zen Pixel',monospace; /* the file is beside this one */
+${Object.entries(PRESETS).map(([k, p]) =>
+  `  --zen-${k}-wght:${p.wght};` +
+  (p.track ? `--zen-${k}-track:${p.track}em;` : '') +
+  (p.scaleX !== 1 ? `--zen-${k}-scale-x:${p.scaleX};` : '')).join('\n')}
+}
+${Object.entries(PRESETS).map(([k, p]) => `\n/* ${p.note} */\n.zen-${k}{${css(p)}}`).join('')}
+`
+
+/* What a visitor can take away. The variable file IS the desktop install — one
+   file, every weight, and every current OS reads it — so the page does not host
+   nine static cuts of each family. A named static is what the cutter above is
+   for, and it names and installs the same either way.
+
+   Static woff2 rides along because a stylesheet sometimes wants a fixed weight
+   without a variable axis. The rest of the release — otf, ttf — would put this
+   publish over the 16 MiB the site lane accepts, and a release that exceeds it
+   fails every publisher on the edge, not just this one. */
+const shipped = () => {
+  const out = []
+  for (const [dir, stem] of Object.values(FILE)) {
+    for (const face of [`${stem}-Variable`, `${stem}-Italic-Variable`]) {
+      if (!existsSync(join(FONTS, dir, `${face}.ttf`))) continue
+      out.push({ dir, file: `${face}.ttf`, kind: 'variable', use: 'install' })
+      out.push({ dir, file: `${face}.woff2`, kind: 'variable', use: 'web' })
+    }
+    for (const f of readdirSync(join(FONTS, dir)).sort()) {
+      if (f.endsWith('.woff2') && !f.includes('Variable')) out.push({ dir, file: f, kind: 'static', use: 'web' })
+    }
+  }
+  return out
+}
 
 /* Zen Pixel's five cuts are five stops on ONE axis, so the variable file holds
    all of them and the space between. `ELSH` is the element — the shape the
@@ -131,8 +196,37 @@ const css = (p) => {
   return out.join(';')
 }
 
+/* Four ways in, in the order someone reaches for them: a link for a page that
+   has no build, an import for a stylesheet that does, the package for an app,
+   and the declaration once the faces are there. */
+const ways = (b) => [
+  { name: 'link', note: 'One request. The faces travel inside the stylesheet, so there is no '
+      + 'second round trip and no cross-origin font to allow.',
+    code: `<link rel="stylesheet" href="https://${b.host}/zen.css">` },
+  { name: '@import', note: 'The same stylesheet, from inside your own.',
+    code: `@import url("https://${b.host}/zen.css");` },
+  { name: 'package', note: 'For an app that builds — the faces are served from your own origin.',
+    code: `pnpm add @hanzo/font\n\nimport '@hanzo/font/css'          // the faces\nimport '@hanzo/font/presets.css'  // the five presets` },
+  { name: 'css', note: 'Name the role rather than the face, so a family change is one edit.',
+    code: `body      { font-family: var(--font-sans) }\ncode, pre { font-family: var(--font-mono) }\n\nh1 { font-family: var(--font-sans) }\nh1 { font-variation-settings: 'wght' ${PRESETS[b.display].wght} }` },
+]
+
+const kb = (n) => (n > 900000 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.round(n / 1000)} KB`)
+const LABEL = { Zen: 'Sans', ZenMono: 'Mono', ZenPixel: 'Pixel' }
+
 function page(b) {
   const feat = b.feature ? `font-feature-settings:'${b.feature}' 1;` : ''
+
+  const WAYS = ways(b)
+
+  const FILES = shipped().map((f) => ({
+    file: f.file,
+    family: LABEL[f.file.split('-')[0]] || 'Sans',
+    for: f.kind === 'variable'
+      ? `${f.use === 'install' ? 'Install it' : 'The web'} — every weight${f.file.includes('Italic') ? ', italic' : ''}, one file`
+      : 'The web, one weight',
+    size: kb(statSync(join(FONTS, f.dir, f.file.replace('-Variable.ttf', '-Variable.ttf'))).size),
+  }))
 
   const presetRows = Object.entries(PRESETS).map(([n, p]) => {
     const mine = b.uses.includes(n)
@@ -292,6 +386,23 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
   90%{font-variation-settings:'ELSH' 80}}
 .pxline{font-family:'Zen Pixel';font-size:31px;color:var(--ac);margin-top:14px}
 
+.ways{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.ways button{padding:11px 17px;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--faint);font-variation-settings:'wght' 600;border-bottom:1px solid transparent;
+  margin-bottom:-1px;transition:color .18s,border-color .18s}
+.ways button[aria-selected=true]{color:var(--fg);border-bottom-color:var(--ac)}
+.paste{position:relative;background:var(--raised);border:1px solid var(--line);
+  border-top:0;border-radius:0 0 3px 3px}
+.paste pre{margin:0;padding:20px 92px 20px 22px;overflow-x:auto;font-family:'Zen Mono',monospace;
+  font-size:13px;line-height:1.85;color:var(--fg);white-space:pre-wrap;word-break:break-all}
+#copy{position:absolute;top:13px;right:13px;padding:6px 13px;font-size:11px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--dim);border:1px solid var(--line2);border-radius:2px;
+  font-variation-settings:'wght' 600;transition:color .18s,border-color .18s}
+#copy:hover{color:var(--fg);border-color:var(--fg)}
+table.files td:first-child{font-family:'Zen Mono',monospace;font-size:13px}
+table.files a{text-decoration:none;border-bottom:1px solid var(--line2)}
+table.files a:hover{border-bottom-color:var(--fg)}
+table.files tbody tr{cursor:default}
 .term{background:var(--sunk);border:1px solid var(--line);border-radius:3px;overflow:hidden}
 .term .bar{display:flex;gap:7px;padding:12px 15px;border-bottom:1px solid var(--line)}
 .term .bar i{width:9px;height:9px;border-radius:50%;background:var(--line2)}
@@ -432,16 +543,33 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
 
 <section class="reveal">
   <div class="head"><span class="eyebrow">07 · Using it</span>
-    <h2>Two imports</h2></div>
-  <div class="install">
-    <code>pnpm add @hanzo/font</code><br><br>
-    <code>import '@hanzo/font/css'</code> &nbsp;<span style="color:var(--faint)">the faces</span><br>
-    <code>import '@hanzo/font/presets.css'</code> &nbsp;<span style="color:var(--faint)">the five presets</span>
-  </div>
-  <p class="note">Then name the role, never the face: <code>var(--font-sans)</code> and
-  <code>var(--font-mono)</code>. A surface on <code>@hanzo/design</code> gets both with
-  the token layer and needs no font import at all — which is what keeps every ${b.name}
-  property on one version of the type as the family evolves.</p>
+    <h2>One line, or two imports</h2></div>
+  <div class="ways" role="tablist">${WAYS.map((w, i) =>
+    `<button role="tab" data-way="${i}" aria-selected="${i === 0}">${w.name}</button>`).join('')}</div>
+  <div class="paste"><pre id="snippet"></pre><button id="copy" type="button">Copy</button></div>
+  <p class="note" id="way-note"></p>
+  <p class="note">Then name the role, never the face: <code>var(--font-sans)</code>,
+  <code>var(--font-mono)</code>, <code>var(--font-pixel)</code>. A surface on
+  <code>@hanzo/design</code> gets them with the token layer and needs no font import at
+  all — which is what keeps every ${b.name} property on one version of the type as the
+  family evolves.</p>
+</section>
+
+<section class="reveal">
+  <div class="head"><span class="eyebrow">08 · The files</span>
+    <h2>Take the family</h2></div>
+  <p>The <strong>variable file is the desktop install</strong> — one file, every weight,
+  and every current system reads it. A named static cut is what the editor above makes,
+  so it is not hosted nine times over here. The <code>.woff2</code> statics are for a
+  stylesheet that wants a fixed weight without an axis.</p>
+  <div class="scroll"><table class="files">
+    <thead><tr><th>File</th><th>Family</th><th class="l">For</th><th>Size</th></tr></thead>
+    <tbody>${FILES.map((f) =>
+      `<tr><td><a href="./fonts/${f.file}" download>${f.file}</a></td>
+       <td>${f.family}</td><td class="l">${f.for}</td><td>${f.size}</td></tr>`).join('\n')}</tbody>
+  </table></div>
+  <p class="note">Licensed under the SIL Open Font License — the notice travels in
+  <code>LICENSE.txt</code> and in each file's own name table.</p>
 </section>
 </div>
 
@@ -608,19 +736,43 @@ $('take-var').onclick = async () => {
   save(await bytes(state.family), FILE[state.family] + '-Variable.ttf')
 }
 
+/* The four ways in. The snippet is data rather than four blocks of markup, so
+   the copy button has one thing to read and the page has one thing to show. */
+const WAYS = ${JSON.stringify(ways(b))}
+const snippet = $('snippet'), note = $('way-note')
+function way(i) {
+  snippet.textContent = WAYS[i].code
+  note.textContent = WAYS[i].note
+  for (const t of document.querySelectorAll('[data-way]')) t.setAttribute('aria-selected', String(+t.dataset.way === i))
+}
+for (const t of document.querySelectorAll('[data-way]')) t.onclick = () => way(+t.dataset.way)
+$('copy').onclick = async (e) => {
+  const b = e.currentTarget
+  try { await navigator.clipboard.writeText(snippet.textContent) } catch { return (b.textContent = 'Select it') }
+  b.textContent = 'Copied'
+  setTimeout(() => { b.textContent = 'Copy' }, 1600)
+}
+way(0)
+
 draw()
 `
 
 mkdirSync(join(HERE, 'dist'), { recursive: true })
 for (const [key, b] of Object.entries(BRANDS)) {
   const dir = join(HERE, 'dist', key)
+  /* Start from nothing. A file that was renamed or dropped upstream otherwise
+     stays in the release forever, and the release is what the world fetches. */
+  rmSync(dir, { recursive: true, force: true })
   mkdirSync(join(dir, 'wasm'), { recursive: true })
   mkdirSync(join(dir, 'fonts'), { recursive: true })
   const html = page(b)
   writeFileSync(join(dir, 'index.html'), html)
   for (const f of ['zen.js', 'zen_bg.wasm']) copyFileSync(join(PKG, 'wasm', f), join(dir, 'wasm', f))
-  for (const [d, stem] of Object.values(FILE)) {
-    copyFileSync(join(FONTS, d, `${stem}-Variable.ttf`), join(dir, 'fonts', `${stem}-Variable.ttf`))
-  }
+  writeFileSync(join(dir, 'zen.css'), sheet().replace('HOST', b.host))
+  /* If the static plane reads this, the files below are reachable from another
+     origin as well; if it does not, nothing changes — zen.css carries its own
+     faces either way. */
+  writeFileSync(join(dir, '_headers'), '/fonts/*\n  Access-Control-Allow-Origin: *\n/zen.css\n  Access-Control-Allow-Origin: *\n')
+  for (const f of shipped()) copyFileSync(join(FONTS, f.dir, f.file), join(dir, 'fonts', f.file))
   console.log(`  ${b.host.padEnd(20)} ${(html.length / 1024).toFixed(0)} KB  ${dir}`)
 }

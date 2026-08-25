@@ -86,10 +86,15 @@ jobs:
           grep -q "font-display:block" "$d/index.html" || { echo "::error::$d/index.html uses swap, not block"; exit 1; }
           # The cutter and the ttf it reads are fetched at download time, so a
           # missing one is a button that fails rather than a page that looks wrong.
-          for f in wasm/zen.js wasm/zen_bg.wasm fonts/Zen-Variable.ttf; do
+          for f in wasm/zen.js wasm/zen_bg.wasm fonts/Zen-Variable.ttf zen.css; do
             test -s "$d/$f" || { echo "::error::$d/$f is missing"; exit 1; }
           done
-          echo "${{ matrix.brand }}: ${bytes} bytes"
+          # The edge refuses a release over 16 MiB with an opaque 400 that reads
+          # as a bad payload, and while it is refusing, every OTHER publisher on
+          # that edge fails too. Say the real reason here, before the upload.
+          mib=$(du -sm "$d" | cut -f1)
+          test "$mib" -lt 15 || { echo "::error::$d is ${mib} MiB — the site lane takes 16"; exit 1; }
+          echo "${{ matrix.brand }}: ${bytes} bytes, ${mib} MiB"
 
       - name: publish ${{ matrix.slug }}
         uses: https://git.hanzo.ai/hanzoai/ci/.github/actions/site@v1

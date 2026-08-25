@@ -68,14 +68,18 @@ copy-npm-fonts:
 		mv Zen-ExtraBold.ttf Zen-UltraBlack.ttf && \
 		mv Zen-ExtraBold.woff2 Zen-UltraBlack.woff2 && \
 		mv 'Zen[wght].ttf' Zen-Variable.ttf && \
-		mv 'Zen[wght].woff2' Zen-Variable.woff2
+		mv 'Zen[wght].woff2' Zen-Variable.woff2 && \
+		mv 'Zen-Italic[wght].ttf' Zen-Italic-Variable.ttf && \
+		mv 'Zen-Italic[wght].woff2' Zen-Italic-Variable.woff2
 	cd packages/zen/dist/fonts/zen-mono && \
 		mv ZenMono-ExtraLight.ttf ZenMono-UltraLight.ttf && \
 		mv ZenMono-ExtraLight.woff2 ZenMono-UltraLight.woff2 && \
 		mv ZenMono-ExtraBold.ttf ZenMono-UltraBlack.ttf && \
 		mv ZenMono-ExtraBold.woff2 ZenMono-UltraBlack.woff2 && \
 		mv 'ZenMono[wght].ttf' ZenMono-Variable.ttf && \
-		mv 'ZenMono[wght].woff2' ZenMono-Variable.woff2
+		mv 'ZenMono[wght].woff2' ZenMono-Variable.woff2 && \
+		mv 'ZenMono-Italic[wght].ttf' ZenMono-Italic-Variable.ttf && \
+		mv 'ZenMono-Italic[wght].woff2' ZenMono-Italic-Variable.woff2
 
 create-release-zip:
 	mkdir -p zen-font
