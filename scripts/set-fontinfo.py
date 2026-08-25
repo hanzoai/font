@@ -4,13 +4,24 @@
 These fields land in the built font's `name` table and OS/2 `achVendID`, so
 they travel with a bare .woff2 wherever it is served. Run after editing a
 source in Glyphs, which rewrites the file from its own UI fields.
+
+nameID 0 carries the upstream copyright line above ours, for the reason
+`packages/zen/scripts/name.py` already states about the hand exports: OFL §2
+binds each copy of the Font Software to the notice, and a .woff2 served to a
+browser IS a copy travelling alone. Family, uniqueID, version, manufacturer,
+designer and the vendor URLs are not the notice — those are ours. LICENSE.txt
+at the root already lists both holders; this keeps the binaries agreeing with it.
 """
 import re
 import sys
 from pathlib import Path
 
 FIELDS = {
-    "copyrights": "Copyright 2026 Hanzo AI, Inc. (https://git.hanzo.ai/hanzoai/font)",
+    "copyrights": (
+        "Copyright 2024 The Geist Project Authors "
+        "(https://github.com/vercel/geist-font)\n"
+        "Copyright 2026 Hanzo AI, Inc. (https://git.hanzo.ai/hanzoai/font)"
+    ),
     "designers": "Hanzo AI, Inc.",
     "designerURL": "https://hanzo.ai",
     "manufacturers": "Hanzo AI, Inc.",
