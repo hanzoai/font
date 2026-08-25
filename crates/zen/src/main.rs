@@ -4,6 +4,7 @@
 //!   zen fit   <target.ttf> <candidate.ttf> <text>   best (wght, scaleX, track)
 //!   zen show  <font.ttf>                        metrics and ratios
 //!   zen lux   <font.ttf>                        fit the LUX wordmark, on features
+//!   zen name  <font.ttf>...                     rewrite the identity to Zen's
 //!   zen even  <font.ttf> <wght> <scaleX> <thicken> <diag-wght>  stroke spread, A-Z
 //!   zen mark  <font.ttf> <text> <wght> <scaleX> <track> <flatten> <thicken> <diag-wght>
 
@@ -34,6 +35,30 @@ fn read(path: &str) -> Vec<u8> {
 fn main() {
     let a: Vec<String> = env::args().skip(1).collect();
     match a.first().map(String::as_str) {
+        Some("name") => {
+            if a.len() < 2 {
+                die("zen name <font.ttf>...")
+            }
+            let (mut moved, mut same) = (0usize, 0usize);
+            for path in &a[1..] {
+                let bytes = read(path);
+                match zen::name::rewrite(&bytes) {
+                    Err(e) => die(&format!("{path}: {e}")),
+                    Ok((_, what)) if !what.any() => same += 1,
+                    Ok((fixed, what)) => {
+                        fs::write(path, &fixed)
+                            .unwrap_or_else(|e| die(&format!("{path}: {e}")));
+                        out(&format!(
+                            "{path}: {} records{}\n",
+                            what.records,
+                            if what.vendor { ", vendor" } else { "" }
+                        ));
+                        moved += 1;
+                    }
+                }
+            }
+            out(&format!("  rewrote {moved}, already correct {same}\n"));
+        }
         Some("kern") => {
             if a.len() < 3 {
                 die("zen kern <font> <text> [wght]")

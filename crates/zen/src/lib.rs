@@ -12,6 +12,9 @@
 pub mod fit;
 pub mod kern;
 pub mod lux;
+
+#[cfg(feature = "name")]
+pub mod name;
 pub mod outline;
 pub mod presets;
 pub mod shape;

@@ -26,9 +26,10 @@ serde_json = { version = "1", optional = true }
 
 [features]
 default = ["cli"]
-# The identity rewrite needs a serialiser; the measurements do not, so a wasm
-# build that only fits and kerns does not carry one.
-name = ["dep:write-fonts"]
+# The identity rewrite replaces ONE table, which is a directory rebuild and two
+# checksums — no serialiser, so a wasm build carries none and `write-fonts` is
+# not linked at all (its `pens` module does not compile against current kurbo).
+name = []
 cli = []
 wasm = ["dep:wasm-bindgen", "dep:serde", "dep:serde_json"]
 
