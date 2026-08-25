@@ -60,22 +60,14 @@ copy-npm-fonts:
 	# morphs between them. gftools writes it as ttf only; the web wants woff2.
 	. venv/bin/activate; python3 -c "from fontTools.ttLib import TTFont; f=TTFont('fonts/ZenPixel/variable/ZenPixel[ELSH].ttf'); f.flavor='woff2'; f.save('packages/zen/dist/fonts/zen-pixel/ZenPixel-Variable.woff2')"
 	cp 'fonts/ZenPixel/variable/ZenPixel[ELSH].ttf' packages/zen/dist/fonts/zen-pixel/ZenPixel-Variable.ttf
-	# Apparently there is a naming mismatch between the font files for npm distribution and the actual font files,
-	# so we need to rename them to the correct names.
+	# A file is named for the face inside it. The only rename left is the
+	# variable's, because a filename carrying [wght] is a URL nobody can type.
 	cd packages/zen/dist/fonts/zen-sans && \
-		mv Zen-ExtraLight.ttf Zen-UltraLight.ttf && \
-		mv Zen-ExtraLight.woff2 Zen-UltraLight.woff2 && \
-		mv Zen-ExtraBold.ttf Zen-UltraBlack.ttf && \
-		mv Zen-ExtraBold.woff2 Zen-UltraBlack.woff2 && \
 		mv 'Zen[wght].ttf' Zen-Variable.ttf && \
 		mv 'Zen[wght].woff2' Zen-Variable.woff2 && \
 		mv 'Zen-Italic[wght].ttf' Zen-Italic-Variable.ttf && \
 		mv 'Zen-Italic[wght].woff2' Zen-Italic-Variable.woff2
 	cd packages/zen/dist/fonts/zen-mono && \
-		mv ZenMono-ExtraLight.ttf ZenMono-UltraLight.ttf && \
-		mv ZenMono-ExtraLight.woff2 ZenMono-UltraLight.woff2 && \
-		mv ZenMono-ExtraBold.ttf ZenMono-UltraBlack.ttf && \
-		mv ZenMono-ExtraBold.woff2 ZenMono-UltraBlack.woff2 && \
 		mv 'ZenMono[wght].ttf' ZenMono-Variable.ttf && \
 		mv 'ZenMono[wght].woff2' ZenMono-Variable.woff2 && \
 		mv 'ZenMono-Italic[wght].ttf' ZenMono-Italic-Variable.ttf && \

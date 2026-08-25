@@ -1,6 +1,6 @@
 {
   "name": "@hanzo/font",
-  "version": "1.8.10",
+  "version": "1.8.11",
   "description": "Zen \u2014 the Hanzo type family: sans, mono and pixel, with brand presets and a wasm cutter.",
   "main": "./dist/font.js",
   "type": "module",
