@@ -9,7 +9,7 @@ help:
 	@echo "  make build:  Builds the fonts and places them in the fonts/ directory"
 	@echo "  make test:   Tests the fonts with fontspector"
 	@echo "  make proof:  Creates HTML proof documents in the proof/ directory"
-	@echo "  make images: Creates PNG specimen images in the documentation/ directory"
+	@echo "  make banner: Draws the repository banner from the built fonts"
 	@echo
 
 build: build.stamp
@@ -108,10 +108,10 @@ test: build.stamp
 proof: venv build.stamp
 	TOCHECK=$$(find fonts/Zen/variable -type f 2>/dev/null); if [ -z "$$TOCHECK" ]; then TOCHECK=$$(find fonts/Zen/ttf -type f 2>/dev/null); fi ; . venv/bin/activate; mkdir -p out/ out/proof; diffenator2 proof $$TOCHECK -o out/proof
 
-images: venv $(DRAWBOT_OUTPUT)
-
-%.png: %.py build.stamp
-	. venv/bin/activate; python3 $< --output $@
+# The banner, drawn with the fonts it is about. Outlines rather than text, so a
+# repository page needs no font to render it.
+banner: venv build.stamp
+	. venv/bin/activate; python3 documentation/banner.py
 
 clean:
 	rm -rf venv venv-pixel
