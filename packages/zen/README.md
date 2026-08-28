@@ -17,7 +17,7 @@ pnpm add @hanzo/font
 
 ### Using with Next.js
 
-`ZenSans` is exported from `@hanzo/font/sans`, `ZenMono` can be found in `@hanzo/font/mono`, and Zen Pixel variants are available from `@hanzo/font/pixel`. All are `NextFontWithVariable` instances. You can learn more by [reading the `next/font` docs](https://nextjs.org/docs/app/building-your-application/optimizing/fonts).
+`Zen` is exported from `@hanzo/font/sans`, `ZenMono` can be found in `@hanzo/font/mono`, and Zen Pixel variants are available from `@hanzo/font/pixel`. All are `NextFontWithVariable` instances. You can learn more by [reading the `next/font` docs](https://nextjs.org/docs/app/building-your-application/optimizing/fonts).
 
 #### Zen Pixel Variants
 
@@ -46,11 +46,11 @@ import {
 In `app/layout.js`:
 
 ```jsx
-import { ZenSans } from "@hanzo/font/sans";
+import { Zen } from "@hanzo/font/sans";
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={ZenSans.className}>
+    <html lang="en" className={Zen.className}>
       <body>{children}</body>
     </html>
   );
@@ -62,11 +62,11 @@ export default function RootLayout({ children }) {
 In `pages/_app.js`:
 
 ```jsx
-import { ZenSans } from "@hanzo/font/sans";
+import { Zen } from "@hanzo/font/sans";
 
 export default function MyApp({ Component, pageProps }) {
   return (
-    <main className={ZenSans.className}>
+    <main className={Zen.className}>
       <Component {...pageProps} />
     </main>
   );
@@ -94,7 +94,7 @@ This is required to fix errors like:
 
 All Zen fonts can be used through CSS variables.
 
-- `ZenSans`: `--font-zen-sans`
+- `Zen`: `--font-zen-sans`
 - `ZenMono`: `--font-zen-mono`
 - `ZenPixelSquare`: `--font-zen-pixel-square`
 - `ZenPixelGrid`: `--font-zen-pixel-grid`
@@ -105,7 +105,7 @@ All Zen fonts can be used through CSS variables.
 In `app/layout.js`:
 
 ```jsx
-import { ZenSans } from "@hanzo/font/sans";
+import { Zen } from "@hanzo/font/sans";
 import { ZenMono } from "@hanzo/font/mono";
 import { ZenPixelSquare } from "@hanzo/font/pixel";
 
@@ -113,7 +113,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${ZenSans.variable} ${ZenMono.variable} ${ZenPixelSquare.variable}`}
+      className={`${Zen.variable} ${ZenMono.variable} ${ZenPixelSquare.variable}`}
     >
       <body>{children}</body>
     </html>
