@@ -1,11 +1,11 @@
-# Zen Sans, Zen Mono & Zen Pixel
+# Zen, Zen Mono & Zen Pixel
 
 Zen is the Hanzo type family, under the SIL Open Font License. Every copyright the
 licence requires is in `LICENSE.txt`, which ships beside the binaries.
 
-Zen Sans is a sans-serif typeface designed for legibility and simplicity. It is modern, geometric, and based on the principles of classic Swiss typography. It is designed to be used in body copy, headlines, logos, posters, and other large display sizes.
+Zen is a sans-serif typeface designed for legibility and simplicity. It is modern, geometric, and based on the principles of classic Swiss typography. It is designed to be used in body copy, headlines, logos, posters, and other large display sizes.
 
-Zen Mono is a monospaced typeface, crafted to be the perfect partner to Zen Sans. It is designed to be used in code editors, diagrams, terminals, and other text-based interfaces where code is rendered.
+Zen Mono is a monospaced typeface, crafted to be the perfect partner to Zen. It is designed to be used in code editors, diagrams, terminals, and other text-based interfaces where code is rendered.
 
 Zen Pixel is a display typeface family featuring five unique pixel-based variants, each with a distinct visual style. It is designed for decorative use in headlines, logos, and other display contexts where a pixelated aesthetic is desired.
 

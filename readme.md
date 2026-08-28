@@ -1,9 +1,9 @@
 # Zen
 
-![The word Zen set twice — in Zen Sans at a thin display weight, and beside it in Zen Pixel's triangle cut — over the line "Sans · Mono · Pixel" and, in Zen Mono, "one variable file · 100–900 · font.hanzo.ai".](./documentation/img/zen-banner--light.svg#gh-light-mode-only)
-![The word Zen set twice — in Zen Sans at a thin display weight, and beside it in Zen Pixel's triangle cut — over the line "Sans · Mono · Pixel" and, in Zen Mono, "one variable file · 100–900 · font.hanzo.ai".](./documentation/img/zen-banner--dark.svg#gh-dark-mode-only)
+![The word Zen set twice — in Zen at a thin display weight, and beside it in Zen Pixel's triangle cut — over the line "Sans · Mono · Pixel" and, in Zen Mono, "one variable file · 100–900 · font.hanzo.ai".](./documentation/img/zen-banner--light.svg#gh-light-mode-only)
+![The word Zen set twice — in Zen at a thin display weight, and beside it in Zen Pixel's triangle cut — over the line "Sans · Mono · Pixel" and, in Zen Mono, "one variable file · 100–900 · font.hanzo.ai".](./documentation/img/zen-banner--dark.svg#gh-dark-mode-only)
 
-# Zen Sans, Zen Mono & Zen Pixel
+# Zen, Zen Mono & Zen Pixel
 
 Zen is the Hanzo typeface. **Sans** is a geometric sans-serif in the Swiss line — one
 variable file across weight 100–900, drawn for headlines, wordmarks and text alike.

@@ -1,7 +1,7 @@
 {
   "name": "@hanzo/font",
   "version": "1.9.0",
-  "description": "Zen — the Hanzo type family: sans, mono and pixel, with brand presets and a wasm cutter.",
+  "description": "Zen \u2014 the Hanzo type family: sans, mono and pixel, with brand presets and a wasm cutter.",
   "main": "./dist/font.js",
   "type": "module",
   "module": "./dist/font.js",
@@ -26,8 +26,7 @@
     "wasm",
     "zen",
     "zen mono",
-    "zen pixel",
-    "zen sans"
+    "zen pixel"
   ],
   "exports": {
     ".": {
@@ -77,5 +76,11 @@
   },
   "sideEffects": [
     "*.css"
+  ],
+  "files": [
+    "dist",
+    "font.d.ts",
+    "LICENSE.txt",
+    "README.md"
   ]
 }
