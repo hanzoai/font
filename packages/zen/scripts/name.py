@@ -25,14 +25,13 @@ import pathlib
 import sys
 from fontTools.ttLib import TTFont
 
+from identity import NOTICE, TAG, VENDOR
+
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 # The hand exports. Everything else under fonts/ comes out of fontmake already
 # naming itself, including ZenPixel's variable, which gftools does build.
 EXPORTS = [ROOT / 'fonts' / 'ZenPixel' / d for d in ('otf', 'ttf', 'webfonts')]
 
-UPSTREAM = 'Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)'
-OURS = 'Copyright 2026 Hanzo AI, Inc. (https://git.hanzo.ai/hanzoai/font)'
-VENDOR = 'https://hanzo.ai'
 
 
 def retag(path: pathlib.Path) -> tuple[str, str]:
@@ -50,10 +49,10 @@ def retag(path: pathlib.Path) -> tuple[str, str]:
     ver = (f['name'].getDebugName(5) or 'Version 1.000').replace('Version ', '')
     was = f['name'].getDebugName(1)
     names = {
-        0: f'{UPSTREAM}\n{OURS}',
+        0: NOTICE,
         1: family,
         2: 'Regular',
-        3: f'{ver};HNZO;ZenPixel-{cut}',
+        3: f'{ver};{TAG};ZenPixel-{cut}',
         4: family,
         6: f'ZenPixel-{cut}',
         8: 'Hanzo AI, Inc.',
@@ -66,7 +65,7 @@ def retag(path: pathlib.Path) -> tuple[str, str]:
         f['name'].setName(val, nid, 1, 0, 0)          # mac/roman, where present
     for nid in (16, 17):
         f['name'].removeNames(nid)
-    f['OS/2'].achVendID = 'HNZO'
+    f['OS/2'].achVendID = TAG
     f.save(str(path))
     return was, family
 

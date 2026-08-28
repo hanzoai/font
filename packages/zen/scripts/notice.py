@@ -20,10 +20,9 @@ import sys
 
 from fontTools.ttLib import TTFont
 
+from identity import NOTICE, OURS, UPSTREAM
+
 ROOT = pathlib.Path(__file__).resolve().parents[3]
-UPSTREAM = 'Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)'
-OURS = 'Copyright 2026 Hanzo AI, Inc. (https://git.hanzo.ai/hanzoai/font)'
-NOTICE = f'{UPSTREAM}\n{OURS}'
 
 
 def fix(path: pathlib.Path) -> bool:
