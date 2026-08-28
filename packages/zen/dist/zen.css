@@ -18,3 +18,10 @@
 @font-face{font-family:'Zen Pixel Line';src:url('./fonts/zen-pixel/ZenPixel-Line.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Square';src:url('./fonts/zen-pixel/ZenPixel-Square.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Triangle';src:url('./fonts/zen-pixel/ZenPixel-Triangle.woff2') format('woff2');font-style:normal;font-display:swap}
+
+/* Bound as custom properties too, so a consumer can hand a family to a design
+   system without spelling its name — and so a CSS-only consumer reads the same
+   two properties the next/font bindings generate. Dropping this block is what
+   1.9.0 did, and it turned every `var(--font-zen-sans)` in a non-Next app into
+   an invalid value, i.e. the OS default, silently. */
+:root{--font-zen-sans:'Zen';--font-zen-mono:'Zen Mono';--font-zen-pixel-circle:'Zen Pixel Circle';--font-zen-pixel-grid:'Zen Pixel Grid';--font-zen-pixel-line:'Zen Pixel Line';--font-zen-pixel-square:'Zen Pixel Square';--font-zen-pixel-triangle:'Zen Pixel Triangle'}

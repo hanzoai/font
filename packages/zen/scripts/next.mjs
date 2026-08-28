@@ -152,6 +152,17 @@ const css = [
   face('Zen Mono', './fonts/zen-mono/ZenMono-Variable.woff2', '100 900'),
   ...PIXEL.map((c) => face(`Zen Pixel ${c}`, `./fonts/zen-pixel/ZenPixel-${c}.woff2`)),
   ``,
+  `/* Bound as custom properties too, so a consumer can hand a family to a design`,
+  `   system without spelling its name — and so a CSS-only consumer reads the same`,
+  `   two properties the next/font bindings generate. Dropping this block is what`,
+  `   1.9.0 did, and it turned every \`var(--font-zen-sans)\` in a non-Next app into`,
+  `   an invalid value, i.e. the OS default, silently. */`,
+  `:root{` + [
+    `--${FAMILY.sans.variable.slice(2)}:'Zen'`,
+    `--${FAMILY.mono.variable.slice(2)}:'Zen Mono'`,
+    ...PIXEL.map((c) => `--font-zen-pixel-${c.toLowerCase()}:'Zen Pixel ${c}'`),
+  ].join(';') + `}`,
+  ``,
 ].join('\n')
 
 writeFileSync(join(DIST, 'font.js'), head + block('sans') + '\n' + block('mono', mono))
@@ -160,6 +171,12 @@ writeFileSync(join(DIST, 'mono-non-variable.js'), head + block('mono', mono))
 writeFileSync(join(DIST, 'sans.js'), head + variable('sans'))
 writeFileSync(join(DIST, 'mono.js'), head + variable('mono', mono))
 writeFileSync(join(DIST, 'pixel.js'), head + PIXEL.map(pixelBlock).join('\n'))
+/* The CSS carries two things a consumer depends on: the faces, and the custom
+   properties that name them. Losing either is silent at the consumer — an
+   undeclared family falls to the OS stack, an undefined var() computes to an
+   invalid value — so a file missing one is not written. */
+for (const need of ['@font-face', ':root{', '--font-zen-sans', '--font-zen-mono'])
+  if (!css.includes(need)) throw new Error(`zen.css would ship without ${need}`)
 writeFileSync(join(DIST, 'zen.css'), css)
 
 /* One place the custom property of every binding is known, so the doc cannot
