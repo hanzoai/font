@@ -4,93 +4,13 @@ import localFont from "next/font/local";
 export const Zen = localFont({
   src: [
     {
-      path: "./fonts/zen-sans/Zen-Thin.woff2",
-      weight: "100",
+      path: "./fonts/zen-sans/Zen-Variable.woff2",
+      weight: "100 900",
       style: "normal",
     },
     {
-      path: "./fonts/zen-sans/Zen-ThinItalic.woff2",
-      weight: "100",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-ExtraLight.woff2",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-ExtraLightItalic.woff2",
-      weight: "200",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-LightItalic.woff2",
-      weight: "300",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-Italic.woff2",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-MediumItalic.woff2",
-      weight: "500",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-SemiBold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-SemiBoldItalic.woff2",
-      weight: "600",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-BoldItalic.woff2",
-      weight: "700",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-ExtraBold.woff2",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-ExtraBoldItalic.woff2",
-      weight: "800",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-Black.woff2",
-      weight: "900",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-sans/Zen-BlackItalic.woff2",
-      weight: "900",
+      path: "./fonts/zen-sans/Zen-Italic-Variable.woff2",
+      weight: "100 900",
       style: "italic",
     },
   ],
@@ -110,93 +30,13 @@ export const Zen = localFont({
 export const ZenMono = localFont({
   src: [
     {
-      path: "./fonts/zen-mono/ZenMono-Thin.woff2",
-      weight: "100",
+      path: "./fonts/zen-mono/ZenMono-Variable.woff2",
+      weight: "100 900",
       style: "normal",
     },
     {
-      path: "./fonts/zen-mono/ZenMono-ThinItalic.woff2",
-      weight: "100",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-ExtraLight.woff2",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-ExtraLightItalic.woff2",
-      weight: "200",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-LightItalic.woff2",
-      weight: "300",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-Italic.woff2",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-MediumItalic.woff2",
-      weight: "500",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-SemiBold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-SemiBoldItalic.woff2",
-      weight: "600",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-BoldItalic.woff2",
-      weight: "700",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-ExtraBold.woff2",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-ExtraBoldItalic.woff2",
-      weight: "800",
-      style: "italic",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-Black.woff2",
-      weight: "900",
-      style: "normal",
-    },
-    {
-      path: "./fonts/zen-mono/ZenMono-BlackItalic.woff2",
-      weight: "900",
+      path: "./fonts/zen-mono/ZenMono-Italic-Variable.woff2",
+      weight: "100 900",
       style: "italic",
     },
   ],

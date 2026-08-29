@@ -12,7 +12,9 @@
    every weight. Pixel is five separate shapes rather than a weight axis. */
 
 @font-face{font-family:'Zen';src:url('./fonts/zen-sans/Zen-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Zen';src:url('./fonts/zen-sans/Zen-Italic-Variable.woff2') format('woff2');font-weight:100 900;font-style:italic;font-display:swap}
 @font-face{font-family:'Zen Mono';src:url('./fonts/zen-mono/ZenMono-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Zen Mono';src:url('./fonts/zen-mono/ZenMono-Italic-Variable.woff2') format('woff2');font-weight:100 900;font-style:italic;font-display:swap}
 @font-face{font-family:'Zen Pixel Circle';src:url('./fonts/zen-pixel/ZenPixel-Circle.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Grid';src:url('./fonts/zen-pixel/ZenPixel-Grid.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Line';src:url('./fonts/zen-pixel/ZenPixel-Line.woff2') format('woff2');font-style:normal;font-display:swap}

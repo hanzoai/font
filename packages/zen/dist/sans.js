@@ -2,7 +2,18 @@
 import localFont from "next/font/local";
 
 export const Zen = localFont({
-  src: "./fonts/zen-sans/Zen-Variable.woff2",
+  src: [
+    {
+      path: "./fonts/zen-sans/Zen-Variable.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/zen-sans/Zen-Italic-Variable.woff2",
+      weight: "100 900",
+      style: "italic",
+    },
+  ],
   variable: "--font-zen-sans",
   fallback: [
     "ui-sans-serif",
@@ -14,5 +25,4 @@ export const Zen = localFont({
     "Arial",
     "sans-serif",
   ],
-  weight: "100 900",
 });

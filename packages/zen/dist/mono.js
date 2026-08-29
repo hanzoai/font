@@ -2,7 +2,18 @@
 import localFont from "next/font/local";
 
 export const ZenMono = localFont({
-  src: "./fonts/zen-mono/ZenMono-Variable.woff2",
+  src: [
+    {
+      path: "./fonts/zen-mono/ZenMono-Variable.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/zen-mono/ZenMono-Italic-Variable.woff2",
+      weight: "100 900",
+      style: "italic",
+    },
+  ],
   variable: "--font-zen-mono",
   adjustFontFallback: false,
   fallback: [
@@ -16,5 +27,4 @@ export const ZenMono = localFont({
     "Courier New",
     "monospace",
   ],
-  weight: "100 900",
 });
