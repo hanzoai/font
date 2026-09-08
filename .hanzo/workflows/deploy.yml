@@ -53,10 +53,10 @@ concurrency:
 jobs:
   sites:
     # NOT ubuntu-latest — these run on the in-cluster act_runner fleet, which
-    # advertises hanzo-build-linux-amd64. A job targeting a label no runner
+    # advertises linux-amd64. A job targeting a label no runner
     # answers queues forever and publishes nothing, which reads as a broken
     # deploy rather than a misrouted one.
-    runs-on: hanzo-build-linux-amd64
+    runs-on: linux-amd64
     timeout-minutes: 20
     strategy:
       # Independent surfaces: one brand failing must not withhold the other two.

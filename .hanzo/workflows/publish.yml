@@ -13,7 +13,7 @@ on:
 
 jobs:
   publish:
-    runs-on: hanzo-build-linux-amd64
+    runs-on: linux-amd64
     steps:
       - uses: actions/checkout@v4
       # No pnpm and no `install`. This repo has ONE package and no root
