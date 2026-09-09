@@ -38,7 +38,7 @@ on:
       - 'packages/zen/dist/presets.js'
       - 'packages/zen/dist/fonts/**'
       - 'packages/zen/dist/wasm/**'
-      - '.hanzo/workflows/deploy.yml'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 concurrency:
