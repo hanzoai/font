@@ -97,7 +97,7 @@ jobs:
           echo "${{ matrix.brand }}: ${bytes} bytes, ${mib} MiB"
 
       - name: publish ${{ matrix.slug }}
-        uses: https://git.hanzo.ai/hanzoai/ci/.github/actions/site@v1
+        uses: hanzoai/ci/.github/actions/site@v1
         with:
           slug: ${{ matrix.slug }}
           dir: sites/dist/${{ matrix.brand }}
