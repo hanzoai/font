@@ -152,7 +152,13 @@ const dts = (names) =>
    and a narrower variable face; a refused default is the guard against it.
 
    The joiners (U+200C-200F) are in the files and not in the range, so an
-   English page with an emoji ZWJ sequence never fetches an Arabic face. */
+   English page with an emoji ZWJ sequence never fetches an Arabic face.
+
+   `block`, where Zen's own faces `swap`. A swap paints the platform's Arabic
+   first and then the companion, and the two are not one shape at different
+   weights: Kufi is wider and taller than Geeza Pro, Segoe UI or DejaVu Sans, so
+   every Arabic line re-wraps under the reader's eye when the face lands. A
+   block holds the Arabic a moment and paints it once, in the face it keeps. */
 const ARABIC = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'arabic.json'), 'utf8'))
 const ZEN_WEIGHT = '100 900'
 for (const f of ARABIC.faces)
@@ -163,7 +169,7 @@ if (fallback.weight !== ZEN_WEIGHT)
   throw new Error(`${fallback.family} spans ${fallback.weight}; only a face over Zen's ${ZEN_WEIGHT} may be declared under 'Zen'`)
 const arabicFace = (family, f) =>
   `@font-face{font-family:'${family}';src:url('./fonts/arabic/${f.file}') format('woff2');` +
-  `font-weight:${f.weight};font-style:normal;font-display:swap;unicode-range:${ARABIC.range}}`
+  `font-weight:${f.weight};font-style:normal;font-display:block;unicode-range:${ARABIC.range}}`
 
 /* The faces as plain CSS, for anything that is not a Next app. Same table, so a
    family cannot be declared here under a name the bindings do not use. */
