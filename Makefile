@@ -72,6 +72,9 @@ copy-npm-fonts:
 		mv 'ZenMono[wght].woff2' ZenMono-Variable.woff2 && \
 		mv 'ZenMono-Italic[wght].ttf' ZenMono-Italic-Variable.ttf && \
 		mv 'ZenMono-Italic[wght].woff2' ZenMono-Italic-Variable.woff2
+	# The Arabic companions, fetched by commit and checksum and cut to the
+	# Arabic blocks. Zen draws none; these are not ours and keep their names.
+	. venv/bin/activate; python3 packages/zen/scripts/arabic.py
 	# Nothing leaves here under our name that is not ours. A face relabelled
 	# family-only answers "Zen" to every question a stylesheet or a grep asks;
 	# vendor and notice are where the bytes admit what they are.

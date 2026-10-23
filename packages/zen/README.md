@@ -163,6 +163,30 @@ module.exports = {
 };
 ```
 
+### Arabic
+
+Zen draws Latin and Cyrillic and no Arabic. `@hanzo/font/css` carries two Arabic
+companions, each a variable font over the same weight axis as Zen (100–900), cut to
+the Arabic blocks (U+0600–06FF, U+0750–077F, U+FB50–FDFF, U+FE70–FEFC):
+
+| Family             | File                                | woff2   |
+| ------------------ | ----------------------------------- | ------- |
+| `Noto Kufi Arabic` | `fonts/arabic/NotoKufiArabic-Variable.woff2` | 94.7 KB |
+| `Noto Sans Arabic` | `fonts/arabic/NotoSansArabic-Variable.woff2` | 132.5 KB |
+
+Each is declared under its own family with an Arabic `unicode-range`, and the
+default (`Noto Kufi Arabic`, also `var(--font-zen-arabic)`) is declared under `Zen`
+and `Zen Mono` too. So `font-family: Zen` sets Arabic with no other change, and a
+page with no Arabic on it never requests an Arabic face. To set Arabic in the other
+companion, name it ahead of Zen: `font-family: 'Noto Sans Arabic', Zen, sans-serif`.
+
+Both cover every Arabic-script language Hanzo ships (Arabic, Persian, Dari, Urdu,
+Pashto, Sindhi, Sorani Kurdish, Uyghur, Shahmukhi Punjabi). They are not ours: each
+keeps its own name and notice under the SIL Open Font License, in
+`fonts/arabic/OFL.txt`, and `scripts/arabic.py` rebuilds them from upstream pinned by
+commit and checksum. The next/font bindings carry Zen only.
+
 ### License
 
 The Zen font family is free and open sourced under the [SIL Open Font License](../../LICENSE.txt).
+The Arabic companions are the Noto Project's, under the same license (`dist/fonts/arabic/OFL.txt`).

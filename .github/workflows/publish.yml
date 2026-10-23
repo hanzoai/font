@@ -99,8 +99,9 @@ jobs:
           # dist/presets.css that disagrees with scripts/presets.mjs, and the
           # disagreement is invisible — both files are valid CSS.
           node packages/zen/scripts/presets.mjs
-          git diff --quiet packages/zen/dist/presets.css || {
-            echo "::error::dist/presets.* is stale — run scripts/presets.mjs and commit"
+          node packages/zen/scripts/next.mjs
+          git diff --quiet packages/zen/dist/presets.css packages/zen/dist/zen.css || {
+            echo "::error::dist/presets.* or dist/zen.css is stale — run scripts/presets.mjs and scripts/next.mjs, and commit"
             exit 1
           }
 
@@ -110,6 +111,9 @@ jobs:
           # sans — the exact failure this typeface exists to prevent.
           for f in dist/fonts/zen-sans/Zen-Variable.woff2 \
                    dist/fonts/zen-mono/ZenMono-Variable.woff2 \
+                   dist/fonts/arabic/NotoKufiArabic-Variable.woff2 \
+                   dist/fonts/arabic/NotoSansArabic-Variable.woff2 \
+                   dist/fonts/arabic/OFL.txt \
                    dist/presets.css dist/presets.js; do
             [ -s "packages/zen/$f" ] || { echo "::error::missing $f"; exit 1; }
           done

@@ -20,6 +20,7 @@ stylesheet, a grep or a font menu asks. Four repositories in the estate carried
 Geist under our name that way. Vendor and notice are where the bytes admit what
 they are.
 """
+import json
 import pathlib
 import sys
 
@@ -31,6 +32,16 @@ NOTICE = f'{UPSTREAM}\n{OURS}'
 VENDOR = 'https://hanzo.ai'
 TAG = 'HNZO'
 FACES = ('.otf', '.ttf', '.woff2')
+
+# The Arabic companions are the one set of faces here that are NOT ours, and they
+# are checked for exactly that: each must still say the family, notice and vendor
+# its upstream gave it. Relabelling one as Zen would be the failure this file
+# exists to catch, pointed the other way. The table is the one arabic.py builds
+# from, so the two cannot disagree about which files are companions.
+COMPANIONS = {
+    face['file']: face
+    for face in json.loads((pathlib.Path(__file__).resolve().parent / 'arabic.json').read_text())['faces']
+}
 
 FAMILIES = {'Zen', 'Zen Mono'} | {
     f'Zen Pixel {cut}' for cut in ('Circle', 'Grid', 'Line', 'Square', 'Triangle')
@@ -67,6 +78,23 @@ def complaints(path: pathlib.Path) -> list[str]:
     return out
 
 
+def companion(path: pathlib.Path, face: dict) -> list[str]:
+    """Everything wrong with a companion's identity. Empty means it is still theirs."""
+    f = TTFont(str(path))
+    out = []
+    family = f['name'].getDebugName(16) or f['name'].getDebugName(1) or ''
+    if family != face['family']:
+        out.append(f'family {family!r}, upstream says {face["family"]!r}')
+    if f['OS/2'].achVendID == TAG:
+        out.append(f'vendor {TAG} on a face that is not ours')
+    notices = [r.toUnicode() for r in f['name'].names if r.nameID == 0]
+    if not notices or any(face['notice'] not in n for n in notices):
+        out.append('upstream copyright missing')
+    if path.parent.name != 'arabic':
+        out.append('outside fonts/arabic')
+    return out
+
+
 def main() -> int:
     roots = [pathlib.Path(a) for a in sys.argv[1:]] or [
         pathlib.Path(__file__).resolve().parents[1] / 'dist' / 'fonts'
@@ -78,16 +106,18 @@ def main() -> int:
             if path.suffix not in FACES:
                 continue
             seen += 1
-            if said := complaints(path):
+            face = COMPANIONS.get(path.name)
+            if said := (companion(path, face) if face else complaints(path)):
                 bad.append(f'  {path.name:<34} {", ".join(said)}')
     if not seen:
         print(f'no faces under {", ".join(str(r) for r in roots)}', file=sys.stderr)
         return 1
     if bad:
-        print(f'{len(bad)} of {seen} faces are not ours:', file=sys.stderr)
+        print(f'{len(bad)} of {seen} faces do not say what they are:', file=sys.stderr)
         print('\n'.join(bad), file=sys.stderr)
         return 1
-    print(f'all {seen} faces name themselves Zen, tag {TAG}, and carry both notices')
+    print(f'all {seen} faces check out: ours name themselves Zen, tag {TAG}, and carry both '
+          f'notices; the {len(COMPANIONS)} Arabic companions keep their own')
     return 0
 
 
