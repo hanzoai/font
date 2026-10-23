@@ -118,8 +118,13 @@ jobs:
             [ -s "packages/zen/$f" ] || { echo "::error::missing $f"; exit 1; }
           done
 
-          OUT=$(cd packages/zen && npm publish --access public 2>&1)
-          PUB=$?; echo "$OUT"
+          # `|| PUB=$?`, because the step runs under bash -e: a bare
+          # `OUT=$(…)` that fails ends the step on that line, before the output
+          # is echoed or the conflict below is recognised — a second publish of
+          # one version failed in four seconds with nothing in the log.
+          PUB=0
+          OUT=$(cd packages/zen && npm publish --access public 2>&1) || PUB=$?
+          echo "$OUT"
           case "$OUT" in
             *EPUBLISHCONFLICT*|*"cannot publish over"*)
               echo "::notice::already on npmjs at $WANT"; exit 0 ;;
@@ -129,10 +134,15 @@ jobs:
           # worked can be unreadable for a few seconds. A false red is worse
           # than a slow green: it reports a release that happened as failed, and
           # the next person burns a version number over it.
-          for i in 1 2 3 4 5 6; do
+          # Fifteen minutes, not one: npm answers "Your package is being
+          # processed" for this package, and 1.9.4 took nine minutes to list
+          # after a publish that had succeeded, which a 60-second wait
+          # reported as a failure.
+          [ "$PUB" = 0 ] || { echo "::error::npm publish exited $PUB"; exit 1; }
+          for i in $(seq 1 90); do
             npm view "@hanzo/font@$WANT" version >/dev/null 2>&1 && {
               echo "published @hanzo/font@$WANT"; exit 0; }
-            echo "not visible yet ($i/6); waiting 10s"; sleep 10
+            echo "not visible yet ($i/90); waiting 10s"; sleep 10
           done
-          echo "::error::@hanzo/font@$WANT is not on npmjs 60s after publish (exit $PUB)"
+          echo "::error::@hanzo/font@$WANT is not on npmjs 15 minutes after publish"
           exit 1
