@@ -9,12 +9,21 @@
    Import it once at your root:  import '@hanzo/font/css'
 
    The two text families are variable over wght 100-900, so one file covers
-   every weight. Pixel is five separate shapes rather than a weight axis. */
+   every weight. Pixel is five separate shapes rather than a weight axis.
+
+   Arabic comes from companions that are not ours, in fonts/arabic:
+   Noto Kufi Arabic, Noto Sans Arabic. Each is declared under its own
+   family, and the default under 'Zen' and 'Zen Mono' too, for the Arabic blocks
+   only: a page with no Arabic on it never requests one. */
 
 @font-face{font-family:'Zen';src:url('./fonts/zen-sans/Zen-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
 @font-face{font-family:'Zen';src:url('./fonts/zen-sans/Zen-Italic-Variable.woff2') format('woff2');font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:'Zen';src:url('./fonts/arabic/NotoKufiArabic-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
 @font-face{font-family:'Zen Mono';src:url('./fonts/zen-mono/ZenMono-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Mono';src:url('./fonts/zen-mono/ZenMono-Italic-Variable.woff2') format('woff2');font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:'Zen Mono';src:url('./fonts/arabic/NotoKufiArabic-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'Noto Kufi Arabic';src:url('./fonts/arabic/NotoKufiArabic-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'Noto Sans Arabic';src:url('./fonts/arabic/NotoSansArabic-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
 @font-face{font-family:'Zen Pixel Circle';src:url('./fonts/zen-pixel/ZenPixel-Circle.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Grid';src:url('./fonts/zen-pixel/ZenPixel-Grid.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Line';src:url('./fonts/zen-pixel/ZenPixel-Line.woff2') format('woff2');font-style:normal;font-display:swap}
@@ -26,4 +35,4 @@
    two properties the next/font bindings generate. Dropping this block is what
    1.9.0 did, and it turned every `var(--font-zen-sans)` in a non-Next app into
    an invalid value, i.e. the OS default, silently. */
-:root{--font-zen-sans:'Zen';--font-zen-mono:'Zen Mono';--font-zen-pixel-circle:'Zen Pixel Circle';--font-zen-pixel-grid:'Zen Pixel Grid';--font-zen-pixel-line:'Zen Pixel Line';--font-zen-pixel-square:'Zen Pixel Square';--font-zen-pixel-triangle:'Zen Pixel Triangle'}
+:root{--font-zen-sans:'Zen';--font-zen-mono:'Zen Mono';--font-zen-arabic:'Noto Kufi Arabic';--font-zen-pixel-circle:'Zen Pixel Circle';--font-zen-pixel-grid:'Zen Pixel Grid';--font-zen-pixel-line:'Zen Pixel Line';--font-zen-pixel-square:'Zen Pixel Square';--font-zen-pixel-triangle:'Zen Pixel Triangle'}

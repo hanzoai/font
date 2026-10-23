@@ -14,7 +14,7 @@
  *
  * Run: node scripts/next.mjs
  */
-import { writeFileSync, existsSync, readdirSync } from 'node:fs'
+import { writeFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -135,6 +135,36 @@ const dts = (names) =>
   'import { NextFontWithVariable } from "next/dist/compiled/@next/font";\n\n' +
   names.map((n) => doc(n) + `export declare const ${n}: NextFontWithVariable;\n`).join('\n')
 
+/* The Arabic companions (scripts/arabic.json, built by scripts/arabic.py). Zen
+   draws no Arabic, so each companion is declared twice:
+
+   - under its OWN family, Arabic code points only, so a stack can name the one
+     a person chose ahead of Zen (@hanzo/design's --font-arabic);
+   - the default ALSO under 'Zen' and 'Zen Mono', so anything that names either
+     gets Arabic with no other change.
+
+   The second only works when the companion's descriptors are Zen's exactly. A
+   face is matched by weight before unicode-range is consulted, and faces in one
+   family composite only when every other descriptor is equal: a companion
+   declared at 400, or 200-1000, wins the weight match for Latin text too, its
+   range then refuses every Latin letter, and the page falls to the system sans
+   — with no font request to show for it. Measured in Chromium with a static
+   and a narrower variable face; a refused default is the guard against it.
+
+   The joiners (U+200C-200F) are in the files and not in the range, so an
+   English page with an emoji ZWJ sequence never fetches an Arabic face. */
+const ARABIC = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'arabic.json'), 'utf8'))
+const ZEN_WEIGHT = '100 900'
+for (const f of ARABIC.faces)
+  if (!existsSync(join(DIST, 'fonts', 'arabic', f.file))) throw new Error(`fonts/arabic/${f.file} is missing; run scripts/arabic.py`)
+const fallback = ARABIC.faces.find((f) => f.family === ARABIC.default)
+if (!fallback) throw new Error(`arabic.json names ${ARABIC.default} as the default and lists no such face`)
+if (fallback.weight !== ZEN_WEIGHT)
+  throw new Error(`${fallback.family} spans ${fallback.weight}; only a face over Zen's ${ZEN_WEIGHT} may be declared under 'Zen'`)
+const arabicFace = (family, f) =>
+  `@font-face{font-family:'${family}';src:url('./fonts/arabic/${f.file}') format('woff2');` +
+  `font-weight:${f.weight};font-style:normal;font-display:swap;unicode-range:${ARABIC.range}}`
+
 /* The faces as plain CSS, for anything that is not a Next app. Same table, so a
    family cannot be declared here under a name the bindings do not use. */
 const face = (family, src, weights, style = 'normal') =>
@@ -161,10 +191,20 @@ const css = [
   `   Import it once at your root:  import '@hanzo/font/css'`,
   ``,
   `   The two text families are variable over wght 100-900, so one file covers`,
-  `   every weight. Pixel is five separate shapes rather than a weight axis. */`,
+  `   every weight. Pixel is five separate shapes rather than a weight axis.`,
+  ``,
+  `   Arabic comes from companions that are not ours, in fonts/arabic:`,
+  `   ${ARABIC.faces.map((f) => f.family).join(', ')}. Each is declared under its own`,
+  `   family, and the default under 'Zen' and 'Zen Mono' too, for the Arabic blocks`,
+  `   only: a page with no Arabic on it never requests one. */`,
   ``,
   ...textFaces('sans'),
+  // After Zen's own faces: a family checks its faces last-declared first, so
+  // an Arabic letter meets the companion before the Latin face it lacks.
+  arabicFace('Zen', fallback),
   ...textFaces('mono'),
+  arabicFace('Zen Mono', fallback),
+  ...ARABIC.faces.map((f) => arabicFace(f.family, f)),
   ...PIXEL.map((c) => face(`Zen Pixel ${c}`, `./fonts/zen-pixel/ZenPixel-${c}.woff2`)),
   ``,
   `/* Bound as custom properties too, so a consumer can hand a family to a design`,
@@ -175,6 +215,7 @@ const css = [
   `:root{` + [
     `--${FAMILY.sans.variable.slice(2)}:'Zen'`,
     `--${FAMILY.mono.variable.slice(2)}:'Zen Mono'`,
+    `--font-zen-arabic:'${ARABIC.default}'`,
     ...PIXEL.map((c) => `--font-zen-pixel-${c.toLowerCase()}:'Zen Pixel ${c}'`),
   ].join(';') + `}`,
   ``,
@@ -195,7 +236,7 @@ writeFileSync(join(DIST, 'pixel.js'), head + PIXEL.map(pixelBlock).join('\n'))
    properties that name them. Losing either is silent at the consumer — an
    undeclared family falls to the OS stack, an undefined var() computes to an
    invalid value — so a file missing one is not written. */
-for (const need of ['@font-face', ':root{', '--font-zen-sans', '--font-zen-mono'])
+for (const need of ['@font-face', ':root{', '--font-zen-sans', '--font-zen-mono', '--font-zen-arabic', 'unicode-range'])
   if (!css.includes(need)) throw new Error(`zen.css would ship without ${need}`)
 writeFileSync(join(DIST, 'zen.css'), css)
 
