@@ -12,7 +12,7 @@
    every weight. Pixel is five separate shapes rather than a weight axis.
 
    Arabic comes from companions that are not ours, in fonts/arabic:
-   Noto Kufi Arabic, Noto Sans Arabic. Each is declared under its own
+   Noto Kufi Arabic, Noto Sans Arabic, IBM Plex Sans Arabic. Each is declared under its own
    family, and the default under 'Zen' and 'Zen Mono' too, for the Arabic blocks
    only: a page with no Arabic on it never requests one. */
 
@@ -24,6 +24,13 @@
 @font-face{font-family:'Zen Mono';src:url('./fonts/arabic/NotoKufiArabic-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
 @font-face{font-family:'Noto Kufi Arabic';src:url('./fonts/arabic/NotoKufiArabic-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
 @font-face{font-family:'Noto Sans Arabic';src:url('./fonts/arabic/NotoSansArabic-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('./fonts/arabic/IBMPlexSansArabic-Thin.woff2') format('woff2');font-weight:100;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('./fonts/arabic/IBMPlexSansArabic-ExtraLight.woff2') format('woff2');font-weight:200;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('./fonts/arabic/IBMPlexSansArabic-Light.woff2') format('woff2');font-weight:300;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('./fonts/arabic/IBMPlexSansArabic-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('./fonts/arabic/IBMPlexSansArabic-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('./fonts/arabic/IBMPlexSansArabic-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('./fonts/arabic/IBMPlexSansArabic-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:block;unicode-range:U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC}
 @font-face{font-family:'Zen Pixel Circle';src:url('./fonts/zen-pixel/ZenPixel-Circle.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Grid';src:url('./fonts/zen-pixel/ZenPixel-Grid.woff2') format('woff2');font-style:normal;font-display:swap}
 @font-face{font-family:'Zen Pixel Line';src:url('./fonts/zen-pixel/ZenPixel-Line.woff2') format('woff2');font-style:normal;font-display:swap}

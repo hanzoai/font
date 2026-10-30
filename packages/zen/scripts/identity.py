@@ -39,8 +39,9 @@ FACES = ('.otf', '.ttf', '.woff2')
 # exists to catch, pointed the other way. The table is the one arabic.py builds
 # from, so the two cannot disagree about which files are companions.
 COMPANIONS = {
-    face['file']: face
+    f['file']: face
     for face in json.loads((pathlib.Path(__file__).resolve().parent / 'arabic.json').read_text())['faces']
+    for f in face['files']
 }
 
 FAMILIES = {'Zen', 'Zen Mono'} | {
@@ -117,7 +118,7 @@ def main() -> int:
         print('\n'.join(bad), file=sys.stderr)
         return 1
     print(f'all {seen} faces check out: ours name themselves Zen, tag {TAG}, and carry both '
-          f'notices; the {len(COMPANIONS)} Arabic companions keep their own')
+          f'notices; the {len(COMPANIONS)} Arabic companion files keep their own')
     return 0
 
 

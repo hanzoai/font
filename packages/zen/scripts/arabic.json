@@ -1,29 +1,98 @@
 {
   "range": "U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC",
+  "needs": "U+060C, U+061B, U+061F, U+0621-063A, U+0640-064B, U+064D-0651, U+0660-066A, U+0670, U+0679-0681, U+0683-068A, U+068C-068D, U+068F, U+0691, U+0693, U+0695-0696, U+0698-069A, U+06A4, U+06A9-06AB, U+06AD, U+06AF, U+06B3, U+06B5, U+06BA-06BC, U+06BE, U+06C1, U+06C6-06C8, U+06CB-06CE, U+06D0, U+06D2, U+06D4-06D5, U+06F0-06F9, U+06FD-06FE, U+0759, U+0768",
   "default": "Noto Kufi Arabic",
-  "license": {
-    "file": "OFL.txt",
-    "source": "https://raw.githubusercontent.com/google/fonts/eb4f2fde9aa730c58ba547d2def669066b6ad87e/ofl/notokufiarabic/OFL.txt",
-    "sha256": "07fc70bfeb985cc1a87a8587d0a0c80bab11c86c9dc3fd95b6f0cb332f983e96"
+  "licenses": {
+    "OFL.txt": {
+      "source": "https://raw.githubusercontent.com/google/fonts/eb4f2fde9aa730c58ba547d2def669066b6ad87e/ofl/notokufiarabic/OFL.txt",
+      "sha256": "07fc70bfeb985cc1a87a8587d0a0c80bab11c86c9dc3fd95b6f0cb332f983e96"
+    },
+    "OFL-Plex.txt": {
+      "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/license.txt",
+      "sha256": "91c25c350d3cac39da2736d74f7ba37ef648f5237a4e330a240615bc8d8c4360"
+    }
   },
   "faces": [
     {
       "family": "Noto Kufi Arabic",
-      "file": "NotoKufiArabic-Variable.woff2",
-      "weight": "100 900",
-      "source": "https://raw.githubusercontent.com/google/fonts/eb4f2fde9aa730c58ba547d2def669066b6ad87e/ofl/notokufiarabic/NotoKufiArabic%5Bwght%5D.ttf",
-      "sha256": "494f6b61469d7a02a2d63f0fc4930bb007388d8cfe551de5eb98354e100889f3",
+      "license": "OFL.txt",
+      "notice": "Copyright 2019-2022 Google LLC.",
+      "cut": true,
       "pin": {},
-      "notice": "Copyright 2019-2022 Google LLC."
+      "files": [
+        {
+          "file": "NotoKufiArabic-Variable.woff2",
+          "weight": "100 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/eb4f2fde9aa730c58ba547d2def669066b6ad87e/ofl/notokufiarabic/NotoKufiArabic%5Bwght%5D.ttf",
+          "sha256": "494f6b61469d7a02a2d63f0fc4930bb007388d8cfe551de5eb98354e100889f3"
+        }
+      ]
     },
     {
       "family": "Noto Sans Arabic",
-      "file": "NotoSansArabic-Variable.woff2",
-      "weight": "100 900",
-      "source": "https://raw.githubusercontent.com/google/fonts/8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5/ofl/notosansarabic/NotoSansArabic%5Bwdth,wght%5D.ttf",
-      "sha256": "63111b5b2e074dd48cc67692e0a2726d86ee94c1c37fe8598257b7b4e87e869e",
+      "license": "OFL.txt",
+      "notice": "Copyright 2022 The Noto Project Authors",
+      "cut": true,
       "pin": { "wdth": 100 },
-      "notice": "Copyright 2022 The Noto Project Authors"
+      "files": [
+        {
+          "file": "NotoSansArabic-Variable.woff2",
+          "weight": "100 900",
+          "source": "https://raw.githubusercontent.com/google/fonts/8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5/ofl/notosansarabic/NotoSansArabic%5Bwdth,wght%5D.ttf",
+          "sha256": "63111b5b2e074dd48cc67692e0a2726d86ee94c1c37fe8598257b7b4e87e869e"
+        }
+      ]
+    },
+    {
+      "family": "IBM Plex Sans Arabic",
+      "license": "OFL-Plex.txt",
+      "notice": "Copyright 2019 IBM Corp.",
+      "cut": false,
+      "pin": {},
+      "files": [
+        {
+          "file": "IBMPlexSansArabic-Thin.woff2",
+          "weight": "100",
+          "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/IBMPlexSansArabic-Thin.woff2",
+          "sha256": "955e41abde689c41712340810cf7b62fa8bf3a2eb727babc796f38178b536125"
+        },
+        {
+          "file": "IBMPlexSansArabic-ExtraLight.woff2",
+          "weight": "200",
+          "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/IBMPlexSansArabic-ExtraLight.woff2",
+          "sha256": "91e24c2256d7cde77ae76da92e4f5cb58ef9dfa32d47e8cfadd8013d19b9796f"
+        },
+        {
+          "file": "IBMPlexSansArabic-Light.woff2",
+          "weight": "300",
+          "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/IBMPlexSansArabic-Light.woff2",
+          "sha256": "a9f0b2eda9dda69757567065818a78dd2c578866ca6f7ed45089f8ca532a8a4d"
+        },
+        {
+          "file": "IBMPlexSansArabic-Regular.woff2",
+          "weight": "400",
+          "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/IBMPlexSansArabic-Regular.woff2",
+          "sha256": "74112e1b7bf2e2c547989a4e947a60cba6cd1f9156e0065670134636e717199d"
+        },
+        {
+          "file": "IBMPlexSansArabic-Medium.woff2",
+          "weight": "500",
+          "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/IBMPlexSansArabic-Medium.woff2",
+          "sha256": "c72f6986f50ded745d06e71e508096209c52a55a6b3a81029954e33c52ba1dd2"
+        },
+        {
+          "file": "IBMPlexSansArabic-SemiBold.woff2",
+          "weight": "600",
+          "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/IBMPlexSansArabic-SemiBold.woff2",
+          "sha256": "869b2acd0a9660607a2025f0fe1c640110bf23d33417509328f07722922b8063"
+        },
+        {
+          "file": "IBMPlexSansArabic-Bold.woff2",
+          "weight": "700",
+          "source": "https://raw.githubusercontent.com/IBM/plex/71f558992315a12ca1f06a2215d57962a1992162/packages/plex-sans-arabic/fonts/complete/woff2/IBMPlexSansArabic-Bold.woff2",
+          "sha256": "db6650a05969c144ab5ab9bb6c3beca6ca4dbb3537bb5f2311c878dd293875b4"
+        }
+      ]
     }
   ]
 }

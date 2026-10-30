@@ -1,23 +1,33 @@
-"""The Arabic companions: fetched from upstream, cut to the Arabic blocks, shipped.
+"""The Arabic companions: fetched from upstream, checked, shipped.
 
 Zen draws Latin and Cyrillic and no Arabic, so a page in Arabic used to fall back
 to whatever face each browser picked. The companions in `arabic.json` fill that
 gap. They are NOT ours and are never renamed: each keeps its own family, notice
-and vendor, which is what `identity.py` checks them for. Each is pinned by
+and vendor, which is what `identity.py` checks them for. Each file is pinned by
 commit and checksum, so a rebuild cannot quietly change what ships.
 
-What happens to each face, and why:
+A companion must draw every letter in `needs`: the Arabic-block characters that
+every Arabic-script catalog @hanzo/i18n ships writes (Arabic, Persian, Dari, Urdu,
+Pashto, Sindhi, Sorani Kurdish, Uyghur, Shahmukhi Punjabi), plus both sets of
+digits. A face missing one sets that letter in another face, mid-word, where the
+two do not join. Cairo, Readex Pro and Rubik were measured and each misses letters
+Pashto, Sindhi, Kurdish or Uyghur write, so none is here.
 
-- Every axis but weight is pinned (Noto Sans Arabic's width, at 100). The page
-  asks for a weight and nothing else, and a second axis doubles the bytes.
-- The cmap is cut to the Arabic blocks in `range`, plus U+200C-200F so the
-  joiners shape inside the face. The joiners stay OUT of the declared
-  unicode-range: an English page with an emoji ZWJ sequence would otherwise
-  fetch the Arabic face for one invisible character.
-- Layout features are kept whole, and hinting goes: the subset is drawn by a
-  browser that ignores it.
+What happens to a face, and why:
 
-Run from the repository root (needs the network once per face):
+- `cut` faces are cut to `range`. Every axis but weight is pinned (Noto Sans
+  Arabic's width, at 100): the page asks for a weight and nothing else, and a
+  second axis doubles the bytes. The cmap keeps the Arabic blocks plus
+  U+200C-200F, so the joiners shape inside the face; the joiners stay OUT of the
+  declared unicode-range, or an English page with an emoji ZWJ sequence would
+  fetch the Arabic face for one invisible character. Layout features are kept
+  whole, and hinting goes: the subset is drawn by a browser that ignores it.
+- A face that is NOT cut ships as its foundry published it. IBM Plex Sans Arabic
+  is one: the OFL reserves the name "Plex", a subset is a Modified Version, and a
+  Modified Version may not carry a Reserved Font Name. IBM's own woff2 is used
+  byte for byte, and the declared unicode-range still keeps its Latin unused.
+
+Run from the repository root (needs the network once per file):
 
     python3 packages/zen/scripts/arabic.py
 """
@@ -55,8 +65,11 @@ def codepoints(spec: str) -> set[int]:
     return out
 
 
-def cut(face: dict) -> bytes:
-    font = TTFont(io.BytesIO(fetch(face['source'], face['sha256'])))
+NEEDS = codepoints(TABLE['needs'])
+
+
+def cut(face: dict, f: dict) -> bytes:
+    font = TTFont(io.BytesIO(fetch(f['source'], f['sha256'])))
     if face['pin']:
         # Through bytes and back: the instancer leaves gvar half-loaded, and the
         # subsetter then asks it for glyphs it no longer has.
@@ -64,9 +77,9 @@ def cut(face: dict) -> bytes:
         instancer.instantiateVariableFont(font, face['pin']).save(pinned)
         font = TTFont(io.BytesIO(pinned.getvalue()))
     axes = {a.axisTag: (a.minValue, a.maxValue) for a in font['fvar'].axes}
-    lo, hi = (float(w) for w in face['weight'].split())
+    lo, hi = (float(w) for w in f['weight'].split())
     if axes != {'wght': (lo, hi)}:
-        raise SystemExit(f"{face['family']}: axes {axes}, declared wght {face['weight']}")
+        raise SystemExit(f"{face['family']}: axes {axes}, declared wght {f['weight']}")
     options = subset.Options()
     options.layout_features = ['*']
     options.name_IDs = ['*']
@@ -83,14 +96,29 @@ def cut(face: dict) -> bytes:
     return buf.getvalue()
 
 
+def whole(face: dict, f: dict) -> bytes:
+    data = fetch(f['source'], f['sha256'])
+    font = TTFont(io.BytesIO(data))
+    if font.flavor != 'woff2':
+        raise SystemExit(f"{f['file']}: {face['family']} ships uncut, so its source must already be woff2")
+    if font['OS/2'].usWeightClass != int(f['weight']):
+        raise SystemExit(f"{f['file']}: weight class {font['OS/2'].usWeightClass}, declared {f['weight']}")
+    return data
+
+
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
-    lic = TABLE['license']
-    (OUT / lic['file']).write_bytes(fetch(lic['source'], lic['sha256']))
+    for name, lic in TABLE['licenses'].items():
+        (OUT / name).write_bytes(fetch(lic['source'], lic['sha256']))
     for face in TABLE['faces']:
-        data = cut(face)
-        (OUT / face['file']).write_bytes(data)
-        print(f"{face['file']:<34} {len(data) / 1024:6.1f} KB  {face['family']}")
+        for f in face['files']:
+            data = (cut if face['cut'] else whole)(face, f)
+            missing = NEEDS - set(TTFont(io.BytesIO(data)).getBestCmap())
+            if missing:
+                letters = ''.join(chr(c) for c in sorted(missing))
+                raise SystemExit(f"{f['file']}: {face['family']} does not draw {letters}")
+            (OUT / f['file']).write_bytes(data)
+            print(f"{f['file']:<36} {len(data) / 1024:6.1f} KB  {face['family']} {f['weight']}")
     return 0
 
 

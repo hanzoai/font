@@ -165,28 +165,38 @@ module.exports = {
 
 ### Arabic
 
-Zen draws Latin and Cyrillic and no Arabic. `@hanzo/font/css` carries two Arabic
-companions, each a variable font over the same weight axis as Zen (100–900), cut to
-the Arabic blocks (U+0600–06FF, U+0750–077F, U+FB50–FDFF, U+FE70–FEFC):
+Zen draws Latin and Cyrillic and no Arabic. `@hanzo/font/css` carries three Arabic
+companions, each declared with an Arabic `unicode-range` (U+0600–06FF, U+0750–077F,
+U+FB50–FDFF, U+FE70–FEFC), so a page with no Arabic on it never requests one:
 
-| Family             | File                                | woff2   |
-| ------------------ | ----------------------------------- | ------- |
-| `Noto Kufi Arabic` | `fonts/arabic/NotoKufiArabic-Variable.woff2` | 94.7 KB |
-| `Noto Sans Arabic` | `fonts/arabic/NotoSansArabic-Variable.woff2` | 132.5 KB |
+| Family                 | Files                                                   | woff2              |
+| ---------------------- | ------------------------------------------------------- | ------------------ |
+| `Noto Kufi Arabic`     | `fonts/arabic/NotoKufiArabic-Variable.woff2`, wght 100–900 | 94.7 KB         |
+| `Noto Sans Arabic`     | `fonts/arabic/NotoSansArabic-Variable.woff2`, wght 100–900 | 132.5 KB        |
+| `IBM Plex Sans Arabic` | `fonts/arabic/IBMPlexSansArabic-<Weight>.woff2`, 100–700 | 70–75 KB a weight |
 
-Each is declared under its own family with an Arabic `unicode-range`, and the
-default (`Noto Kufi Arabic`, also `var(--font-zen-arabic)`) is declared under `Zen`
-and `Zen Mono` too. So `font-family: Zen` sets Arabic with no other change, and a
-page with no Arabic on it never requests an Arabic face. To set Arabic in the other
-companion, name it ahead of Zen: `font-family: 'Noto Sans Arabic', Zen, sans-serif`.
+The default (`Noto Kufi Arabic`, also `var(--font-zen-arabic)`) is declared under
+`Zen` and `Zen Mono` too, so `font-family: Zen` sets Arabic with no other change. To
+set Arabic in another companion, name it ahead of Zen:
+`font-family: 'IBM Plex Sans Arabic', Zen, sans-serif`.
 
-Both cover every Arabic-script language Hanzo ships (Arabic, Persian, Dari, Urdu,
-Pashto, Sindhi, Sorani Kurdish, Uyghur, Shahmukhi Punjabi). They are not ours: each
-keeps its own name and notice under the SIL Open Font License, in
-`fonts/arabic/OFL.txt`, and `scripts/arabic.py` rebuilds them from upstream pinned by
-commit and checksum. The next/font bindings carry Zen only.
+Every companion draws every letter the Arabic-script languages Hanzo ships write
+(Arabic, Persian, Dari, Urdu, Pashto, Sindhi, Sorani Kurdish, Uyghur, Shahmukhi
+Punjabi); `scripts/arabic.py` refuses a face that does not. Cairo, Readex Pro and
+Rubik were measured and are not here: each misses letters Pashto, Sindhi, Kurdish or
+Uyghur write.
+
+The Noto faces are cut to the Arabic blocks, variable over Zen's weight axis. IBM Plex
+Sans Arabic is IBM's own woff2, one file per weight, byte for byte: the OFL reserves
+the name "Plex", and a subset is a Modified Version that may not carry it. The default
+is a single variable file over 100–900 because faces in one family composite only
+when every descriptor but the range is equal, so Plex is offered under its own name
+only. None of them is ours: each keeps its own name and notice under the SIL Open Font
+License (`fonts/arabic/OFL.txt` for Noto, `fonts/arabic/OFL-Plex.txt` for Plex), and
+`scripts/arabic.py` rebuilds them from upstream pinned by commit and checksum. The
+next/font bindings carry Zen only.
 
 ### License
 
 The Zen font family is free and open sourced under the [SIL Open Font License](../../LICENSE.txt).
-The Arabic companions are the Noto Project's, under the same license (`dist/fonts/arabic/OFL.txt`).
+The Arabic companions are the Noto Project's (`dist/fonts/arabic/OFL.txt`) and IBM's (`dist/fonts/arabic/OFL-Plex.txt`), under the same license.

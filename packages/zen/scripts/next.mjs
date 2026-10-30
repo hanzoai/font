@@ -150,6 +150,9 @@ const dts = (names) =>
    range then refuses every Latin letter, and the page falls to the system sans
    — with no font request to show for it. Measured in Chromium with a static
    and a narrower variable face; a refused default is the guard against it.
+   So the default is one variable file over Zen's 100-900, and a family that
+   ships one file per weight (IBM Plex Sans Arabic) is offered under its own
+   name only, one @font-face per weight.
 
    The joiners (U+200C-200F) are in the files and not in the range, so an
    English page with an emoji ZWJ sequence never fetches an Arabic face.
@@ -161,15 +164,17 @@ const dts = (names) =>
    block holds the Arabic a moment and paints it once, in the face it keeps. */
 const ARABIC = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'arabic.json'), 'utf8'))
 const ZEN_WEIGHT = '100 900'
-for (const f of ARABIC.faces)
-  if (!existsSync(join(DIST, 'fonts', 'arabic', f.file))) throw new Error(`fonts/arabic/${f.file} is missing; run scripts/arabic.py`)
+for (const face of ARABIC.faces)
+  for (const f of face.files)
+    if (!existsSync(join(DIST, 'fonts', 'arabic', f.file))) throw new Error(`fonts/arabic/${f.file} is missing; run scripts/arabic.py`)
 const fallback = ARABIC.faces.find((f) => f.family === ARABIC.default)
 if (!fallback) throw new Error(`arabic.json names ${ARABIC.default} as the default and lists no such face`)
-if (fallback.weight !== ZEN_WEIGHT)
-  throw new Error(`${fallback.family} spans ${fallback.weight}; only a face over Zen's ${ZEN_WEIGHT} may be declared under 'Zen'`)
-const arabicFace = (family, f) =>
-  `@font-face{font-family:'${family}';src:url('./fonts/arabic/${f.file}') format('woff2');` +
-  `font-weight:${f.weight};font-style:normal;font-display:block;unicode-range:${ARABIC.range}}`
+if (fallback.files.length !== 1 || fallback.files[0].weight !== ZEN_WEIGHT)
+  throw new Error(`${fallback.family} is not one file over Zen's ${ZEN_WEIGHT}, so it may not be declared under 'Zen'`)
+const arabicFace = (family, face) =>
+  face.files.map((f) =>
+    `@font-face{font-family:'${family}';src:url('./fonts/arabic/${f.file}') format('woff2');` +
+    `font-weight:${f.weight};font-style:normal;font-display:block;unicode-range:${ARABIC.range}}`)
 
 /* The faces as plain CSS, for anything that is not a Next app. Same table, so a
    family cannot be declared here under a name the bindings do not use. */
@@ -207,10 +212,10 @@ const css = [
   ...textFaces('sans'),
   // After Zen's own faces: a family checks its faces last-declared first, so
   // an Arabic letter meets the companion before the Latin face it lacks.
-  arabicFace('Zen', fallback),
+  ...arabicFace('Zen', fallback),
   ...textFaces('mono'),
-  arabicFace('Zen Mono', fallback),
-  ...ARABIC.faces.map((f) => arabicFace(f.family, f)),
+  ...arabicFace('Zen Mono', fallback),
+  ...ARABIC.faces.flatMap((f) => arabicFace(f.family, f)),
   ...PIXEL.map((c) => face(`Zen Pixel ${c}`, `./fonts/zen-pixel/ZenPixel-${c}.woff2`)),
   ``,
   `/* Bound as custom properties too, so a consumer can hand a family to a design`,
