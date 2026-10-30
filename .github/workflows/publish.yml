@@ -109,11 +109,13 @@ jobs:
           # exports entry pointing at a file that is not packed resolves at
           # install time and 404s at run time, and the fallback is the platform
           # sans — the exact failure this typeface exists to prevent.
+          # The Arabic files and their licences are read off the table that
+          # builds them, so a companion added there is checked here too.
+          ARABIC=$(jq -r '(.faces[].files[].file), (.licenses | keys[])' packages/zen/scripts/arabic.json \
+                     | sed 's|^|dist/fonts/arabic/|')
           for f in dist/fonts/zen-sans/Zen-Variable.woff2 \
                    dist/fonts/zen-mono/ZenMono-Variable.woff2 \
-                   dist/fonts/arabic/NotoKufiArabic-Variable.woff2 \
-                   dist/fonts/arabic/NotoSansArabic-Variable.woff2 \
-                   dist/fonts/arabic/OFL.txt \
+                   $ARABIC \
                    dist/presets.css dist/presets.js; do
             [ -s "packages/zen/$f" ] || { echo "::error::missing $f"; exit 1; }
           done
