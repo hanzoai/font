@@ -18,7 +18,7 @@ Cormorant Garamond, EB Garamond, Source Serif 4, JetBrains Mono): the Latin subs
 as woff2 under `dist/open/`, with `font-display: swap`. A @font-face rule fetches nothing until
 a glyph uses it, so a page may import them all. `@hanzo/font/open/<slug>.css` is one family's
 faces beside its bytes, and `@hanzo/font/open` lists the families with their licences.
-`node scripts/open.mjs` writes them.
+`node scripts/open.ts` writes them.
 
 ### Installation
 
