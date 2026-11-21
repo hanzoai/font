@@ -9,6 +9,17 @@ Zen Mono is a monospaced typeface, crafted to be the perfect partner to Zen. It 
 
 Zen Pixel is a display typeface family featuring five unique pixel-based variants, each with a distinct visual style. It is designed for decorative use in headlines, logos, and other display contexts where a pixelated aesthetic is desired.
 
+### The open faces
+
+`@hanzo/font/open.css` carries eighteen SIL OFL families a type system may pair beside Zen
+(Inter, Manrope, DM Sans, Work Sans, IBM Plex Sans and Mono, Space Grotesk, Archivo,
+Bricolage Grotesque, Syne, Fraunces, Playfair Display, DM Serif Display, Instrument Serif,
+Cormorant Garamond, EB Garamond, Source Serif 4, JetBrains Mono): the Latin subset of each,
+as woff2 under `dist/open/`, with `font-display: swap`. A @font-face rule fetches nothing until
+a glyph uses it, so a page may import them all. `@hanzo/font/open/<slug>.css` is one family's
+faces beside its bytes, and `@hanzo/font/open` lists the families with their licences.
+`node scripts/open.ts` writes them.
+
 ### Installation
 
 ```sh
