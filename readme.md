@@ -1,5 +1,7 @@
 # Zen
 
+[![Open in Hanzo](https://hanzo.app/badges/open-in-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/font&ref=main&action=open) [![Edit with Hanzo](https://hanzo.app/badges/edit-with-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/font&ref=main&action=edit)
+
 ![The word Zen set twice — in Zen at a thin display weight, and beside it in Zen Pixel's triangle cut — over the line "Sans · Mono · Pixel" and, in Zen Mono, "one variable file · 100–900 · font.hanzo.ai".](./documentation/img/zen-banner--light.svg#gh-light-mode-only)
 ![The word Zen set twice — in Zen at a thin display weight, and beside it in Zen Pixel's triangle cut — over the line "Sans · Mono · Pixel" and, in Zen Mono, "one variable file · 100–900 · font.hanzo.ai".](./documentation/img/zen-banner--dark.svg#gh-dark-mode-only)
 
